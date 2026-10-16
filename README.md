@@ -14,6 +14,22 @@ python3 -m http.server 8080
 # then open http://<your-computer-ip>:8080/
 ```
 
+For GitHub Pages, publish the repository root. `preview.png` and `icon.png` are the link preview and app icon
+referenced from the page's meta tags.
+
 ## How to play
 
-Drag from a creature to its matching home (same colour and the same little symbol). Paths cannot cross rocks, other creatures or other homes. Drawing over a friend's path cuts it short. Undo, reset and a hint are always available. Stars reward finishing with few redraws.
+Drag from a creature to its matching home. Every home wears a little portrait of who lives there, and tapping a
+creature makes its home glow. Paths cannot cross rocks or logs, other creatures or other homes. Drawing over a
+friend's path cuts it short. Undo, reset and a hint are always available.
+
+- 1 star: everyone is home.
+- 2 stars: with only a couple of redraws.
+- 3 stars: a perfect garden, every tile covered (from level 7 onwards).
+
+52 levels across six areas, plus a fresh daily puzzle with a streak counter.
+
+## Releasing an update
+
+Bump the `app-version` meta tag in `index.html` with every deploy. Open copies of the game check it in the
+background and refresh themselves between levels when a newer build is live.
