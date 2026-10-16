@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, maximum-scale=1">
 <meta name="theme-color" content="#f6ecd8">
-<meta name="app-version" content="2026.10.16.4">
+<meta name="app-version" content="2026.10.16.5">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -84,12 +84,14 @@ canvas{display:block;}
 .btn-label{font-size:12px; font-weight:700; text-align:center; margin-top:6px; color:var(--brown-soft); letter-spacing:.4px;}
 .ctrl{display:flex; flex-direction:column; align-items:center;}
 /* ---------- title ---------- */
-#screen-title{align-items:center; justify-content:space-between; text-align:center; padding-left:18px; padding-right:18px;}
+#screen-title{align-items:center; justify-content:space-between; text-align:center; padding-left:12px; padding-right:12px;}
 .title-top{display:flex; width:100%; justify-content:flex-end; gap:10px; padding:12px 4px 0;}
-.title-art{display:flex; flex-direction:column; align-items:center; margin-top:min(3vh,22px);}
+.title-art{display:flex; flex-direction:column; align-items:center; margin-top:min(2vh,14px);}
 .title-art svg{width:min(88vw,460px); height:auto; filter:drop-shadow(0 10px 18px rgba(94,67,52,.18));}
 .tagline{margin:6px 0 0; font-size:clamp(15px,4.2vw,19px); font-weight:600; color:var(--brown-soft); max-width:30ch;}
-#parade{width:min(96vw,520px); height:140px; margin-top:min(2vh,10px); cursor:pointer; touch-action:manipulation;}
+#garden-wrap{position:relative; flex:1; width:100%; max-width:600px; min-height:160px; margin:2px auto 0; touch-action:none;}
+#parade{position:absolute; inset:0; cursor:pointer; touch-action:none;}
+.garden-tip{margin:0 auto 8px; line-height:1.3; font-size:14px; font-weight:800; color:var(--brown); background:rgba(251,244,230,.82); padding:6px 14px; border-radius:14px; box-shadow:0 2px 8px rgba(94,67,52,.1); max-width:92%; text-align:center; min-height:20px;}
 .row-btns{display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
 .progress-pill.streak{color:var(--moss-deep); background:rgba(169,201,154,.35);}
 .progress-pill[hidden]{display:none;}
@@ -202,7 +204,8 @@ canvas{display:block;}
 .sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;}
 .reduce-motion *{transition-duration:.01ms !important; animation-duration:.01ms !important;}
 @media (max-height:640px){
-  #parade{height:110px;} .title-art svg{width:min(80vw,380px);} .btn-primary{padding:13px 38px; min-height:54px; font-size:19px;}
+  .garden-tip{font-size:13px; padding:5px 12px;} .title-actions{gap:10px;}
+  .title-art svg{width:min(74vw,340px);} .tagline{font-size:14px;} .btn-primary{padding:13px 38px; min-height:54px; font-size:19px;}
   .controls{min-height:84px;} .hud{min-height:58px;}
 }
 @media (min-width:900px){ .level-grid{grid-template-columns:repeat(4,1fr);} }
@@ -222,8 +225,9 @@ canvas{display:block;}
     <div class="title-art">
       <svg id="logo" viewBox="0 0 460 190" role="img" aria-label="Mochi Colony"></svg>
       <p class="tagline">Help the little forest spirits find their way home.</p>
-      <canvas id="parade" aria-label="The spirits of Mochi Colony" role="img"></canvas>
     </div>
+    <div id="garden-wrap"><canvas id="parade" aria-label="The colony garden. Tap a friend to pet them." role="img"></canvas></div>
+    <p class="garden-tip" id="garden-tip">Tap Mochi to say hello</p>
     <div class="title-actions">
       <button class="btn btn-primary" id="btn-play">Play</button>
       <div class="row-btns"><button class="btn btn-soft" id="btn-daily">Today's puzzle</button><button class="btn btn-soft" id="btn-levels">Levels</button></div>
@@ -345,6 +349,9 @@ const Audio = {
   pop() { this.tone(520, .04, { type: 'sine', vol: .2, release: .06, slide: 1.3 }); },
   undo() { this.pluck(523.25, 0, .25); this.pluck(392, .08, .25); },
   tap() { this.tone(620, .035, { type: 'sine', vol: .18, release: .06 }); },
+  pet(type) { const base = { mochi: 660, pip: 560, bibi: 740, moss: 440, puddle: 620, bumble: 820 }[type] || 640; this.tone(base, .08, { type: 'sine', vol: .26, release: .1, slide: 1.25 }); this.tone(base * 1.5, .07, { type: 'sine', vol: .14, at: .09, release: .14, slide: 1.12 }); },
+  purr() { this.tone(180, .5, { type: 'triangle', vol: .08, attack: .1, release: .3 }); this.tone(1046.5, .1, { type: 'sine', vol: .12, at: .05, release: .2 }); },
+  munch() { [0, .14, .28].forEach(a => this.tone(300 + Math.random() * 80, .04, { type: 'triangle', vol: .2, at: a, release: .05, slide: .7 })); this.pluck(880, .45, .25); },
   complete() {
     const n = [523.25, 659.25, 783.99, 1046.5, 1318.5];
     n.forEach((f, i) => this.pluck(f, i * .11, .35));
@@ -355,20 +362,22 @@ const Audio = {
 // --------------------------------------------------------------- storage
 const Save = {
   KEY: 'mochi-colony-save-v1', ok: true,
-  data: { stars: {}, sound: true, motion: null, lastLevel: 0, met: {}, daily: { done: {}, streak: 0, last: '' }, perfectStreak: 0 },
+  data: { stars: {}, sound: true, motion: null, lastLevel: 0, met: {}, daily: { done: {}, streak: 0, last: '' }, perfectStreak: 0, treats: null, pets: {}, petTips: 0 },
   load() {
     try { const raw = localStorage.getItem(this.KEY); if (raw) { const d = JSON.parse(raw); if (d && typeof d === 'object') Object.assign(this.data, d); } }
     catch (e) { this.ok = false; }
   },
   save() { try { localStorage.setItem(this.KEY, JSON.stringify(this.data)); } catch (e) { this.ok = false; } },
   stars(i) { return this.data.stars[i] || 0; },
-  setStars(i, n) { if (n > this.stars(i)) { this.data.stars[i] = n; this.save(); } },
+  setStars(i, n) { const prev = this.stars(i); if (n > prev) { this.data.stars[i] = n; this.data.treats = (this.data.treats || 0) + (n - prev); this.save(); } },
+  happy(type) { const p = this.data.pets[type]; if (!p) return 50; const hours = Math.max(0, (Date.now() - p.t) / 36e5); return clamp(p.h - hours * 3, 0, 100); },
+  setHappy(type, h) { this.data.pets[type] = { h: clamp(h, 0, 100), t: Date.now() }; },
   unlockedCount() { let n = 1; for (let i = 0; i < LEVELS.length; i++) if (this.stars(i) > 0) n = Math.max(n, i + 2); return Math.min(n, LEVELS.length); },
   totalStars() { let s = 0; for (let i = 0; i < LEVELS.length; i++) s += this.stars(i); return s; },
   todayKey(offset = 0) { const d = new Date(); d.setDate(d.getDate() + offset); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; },
   dailyStars() { return (this.data.daily.done || {})[this.todayKey()] || 0; },
   dailyStreak() { const d = this.data.daily; if (!d.last) return 0; return (d.last === this.todayKey() || d.last === this.todayKey(-1)) ? d.streak : 0; },
-  setDaily(stars) { const d = this.data.daily; const today = this.todayKey(); if (!d.done[today]) { d.streak = d.last === this.todayKey(-1) ? (d.streak || 0) + 1 : 1; d.last = today; } d.done[today] = Math.max(d.done[today] || 0, stars); this.save(); }
+  setDaily(stars) { const d = this.data.daily; const today = this.todayKey(); if (!d.done[today]) { d.streak = d.last === this.todayKey(-1) ? (d.streak || 0) + 1 : 1; d.last = today; } const prevD = d.done[today] || 0; if (stars > prevD) this.data.treats = (this.data.treats || 0) + (stars - prevD); d.done[today] = Math.max(prevD, stars); this.save(); }
 };
 
 // ---------------------------------------------------------------- levels
@@ -1355,7 +1364,7 @@ const UI = {
   show(s) {
     this.screen = s; document.querySelectorAll('.screen').forEach(el => el.classList.toggle('active', el.id === 'screen-' + s));
     if (s !== 'game') Scenery.set('meadow');
-    if (s === 'levels') this.buildLevels(); if (s === 'title') this.updateTitleProgress();
+    if (s === 'levels') this.buildLevels(); if (s === 'title') { this.updateTitleProgress(); requestAnimationFrame(() => Garden.resize()); }
     this.hideHintBubble();
   },
   play() { let n = -1; for (let i = 0; i < LEVELS.length; i++) if (Save.stars(i) === 0) { n = i; break; } if (n < 0) n = clamp(Save.data.lastLevel || 0, 0, LEVELS.length - 1); n = Math.min(n, Save.unlockedCount() - 1); this.startLevel(n); },
@@ -1463,27 +1472,211 @@ const Celebrate = {
   stop() { this.on = false; this.items = []; if (this.ctx) this.ctx.clearRect(0, 0, this.w, this.h); },
   draw(dt) { if (!this.on || !this.ctx) return; const ctx = this.ctx; ctx.clearRect(0, 0, this.w, this.h); const t = now() / 1000; for (const it of this.items) { it.y += it.v * dt; it.x += Math.sin(t * 1.5 + it.p) * 30 * dt; it.r += it.vr * dt; if (it.y > this.h + 20) { it.y = -20; it.x = Math.random() * this.w; } ctx.save(); ctx.globalAlpha = .9; ctx.translate(it.x, it.y); ctx.rotate(it.r); ctx.fillStyle = it.c; ellipse(ctx, 0, 0, it.s, it.s * .6); ctx.fill(); ctx.strokeStyle = 'rgba(94,67,52,.25)'; ctx.lineWidth = 1; ctx.stroke(); ctx.restore(); } }
 };
-// title-screen parade of the cast (tap a friend to make it hop)
-const Parade = {
-  cv: null, ctx: null, w: 0, h: 0, cast: [],
+// ---------------------------------------------------------------- garden
+// The home-screen garden: friends you have met wander, nap, greet each other,
+// and can be petted (tap), cuddled (hold), called (tap the grass) and fed acorns.
+function roundRectPath(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r); ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h); ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r); ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath(); }
+function drawHeart(ctx, x, y, s, color) { ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(x, y + s * .7); ctx.bezierCurveTo(x - s * 1.2, y - s * .2, x - s * .5, y - s * 1.1, x, y - s * .35); ctx.bezierCurveTo(x + s * .5, y - s * 1.1, x + s * 1.2, y - s * .2, x, y + s * .7); ctx.fill(); }
+function drawAcorn(ctx, x, y, s) {
+  ctx.save(); ctx.translate(x, y);
+  ctx.fillStyle = '#e2b464'; ctx.beginPath(); ctx.moveTo(-s * .42, -s * .05); ctx.bezierCurveTo(-s * .44, s * .45, -s * .12, s * .62, 0, s * .66); ctx.bezierCurveTo(s * .12, s * .62, s * .44, s * .45, s * .42, -s * .05); ctx.closePath(); ctx.fill(); ctx.strokeStyle = 'rgba(94,67,52,.55)'; ctx.lineWidth = Math.max(1, s * .06); ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,.35)'; ellipse(ctx, -s * .16, s * .2, s * .08, s * .18, .2); ctx.fill();
+  ctx.fillStyle = '#a9744f'; ctx.beginPath(); ctx.moveTo(-s * .5, 0); ctx.bezierCurveTo(-s * .5, -s * .5, s * .5, -s * .5, s * .5, 0); ctx.quadraticCurveTo(0, s * .1, -s * .5, 0); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = '#7a5541'; ctx.lineWidth = Math.max(1.5, s * .1); ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(0, -s * .36); ctx.lineTo(s * .08, -s * .56); ctx.stroke();
+  ctx.restore();
+}
+const Garden = {
+  cv: null, ctx: null, w: 0, h: 0, pets: [], fx: [], treats: [], press: null, drag: null, deco: null, t: 0, basketWob: 0, callMark: null,
   init() {
-    this.cv = $('#parade'); this.cast = CHAR_ORDER.map((type, i) => ({ type, phase: i * 1.1, hop: 0, hopT: 1, blinkAt: 1 + Math.random() * 3, blink: 0, expr: null, exprUntil: 0 }));
-    this.cv.addEventListener('pointerdown', e => { Audio.init(); Audio.resume(); const r = this.cv.getBoundingClientRect(); const x = e.clientX - r.left; const i = clamp(Math.floor(x / (this.w / 6)), 0, 5); const c = this.cast[i]; if (c.hopT >= 1) { c.hopT = 0; c.expr = 'celebrating'; c.exprUntil = now() / 1000 + 1.2; Audio.pop(); } });
+    this.cv = $('#parade');
+    this.cv.addEventListener('pointerdown', e => this.down(e));
+    this.cv.addEventListener('pointermove', e => this.move(e));
+    this.cv.addEventListener('pointerup', e => this.up(e));
+    this.cv.addEventListener('pointercancel', () => { this.press = null; this.drag = null; this.pets.forEach(p => { if (p.state === 'cuddle') this.setState(p, 'happy', .8); }); });
+    this.cv.addEventListener('contextmenu', e => e.preventDefault());
   },
-  resize() { const r = this.cv.getBoundingClientRect(); this.w = Math.max(200, r.width); this.h = Math.max(100, r.height); this.ctx = fitCanvas(this.cv, this.w, this.h); },
-  draw(dt) {
-    const ctx = this.ctx; if (!ctx) return; ctx.clearRect(0, 0, this.w, this.h); const t = now() / 1000; const u = Math.min(this.w / 6 * .9, this.h * .62); const motion = UI.motion;
-    this.cast.forEach((c, i) => {
-      const x = this.w * (i + .5) / 6, y = this.h * .58; c.blinkAt -= dt; if (c.blinkAt < 0) { c.blink = .14; c.blinkAt = 2 + Math.random() * 3; } if (c.blink > 0) c.blink -= dt;
-      if (c.hopT < 1) c.hopT = Math.min(1, c.hopT + dt * 1.6); if (c.exprUntil && t > c.exprUntil) { c.expr = null; c.exprUntil = 0; }
-      const hop = c.hopT < 1 && motion ? -Math.sin(c.hopT * Math.PI) * u * .45 : 0; const bob = motion ? Math.sin(t * 2 + c.phase) * u * .02 : 0;
-      ctx.fillStyle = 'rgba(94,67,52,.14)'; ellipse(ctx, x, y + u * .42, u * .34 * (1 + hop / u * .6), u * .09); ctx.fill();
-      const met = c.type === 'mochi' || Save.data.met[c.type];
-      if (!met) { ctx.save(); ctx.globalAlpha = .34; ctx.filter = 'saturate(0) brightness(1.25) contrast(.75)'; }
-      drawCreature(ctx, c.type, x, y + bob, u, { t, phase: c.phase, blink: c.blink > 0 ? 1 : 0, hopY: hop, expr: c.expr || undefined, sy: c.hopT < 1 ? 1 + Math.sin(c.hopT * Math.PI) * .08 : 1, still: !motion });
-      if (!met) { ctx.restore(); ctx.fillStyle = '#5e4334'; ctx.font = `800 ${u * .3}px ${getComputedStyle(document.body).fontFamily}`; ctx.textAlign = 'center'; ctx.globalAlpha = .55; ctx.fillText('?', x, y + u * .12); ctx.globalAlpha = 1; }
-      ctx.fillStyle = '#5e4334'; ctx.font = `700 ${Math.max(11, u * .17)}px ${getComputedStyle(document.body).fontFamily}`; ctx.textAlign = 'center'; ctx.globalAlpha = .8; ctx.fillText(met ? CHARS[c.type].name : '???', x, y + u * .68); ctx.globalAlpha = 1;
-    });
+  // ground band where feet may stand
+  top() { return this.h * .3; }, bottom() { return this.h * .86; }, left() { return Math.max(34, this.w * .08); }, right() { return this.w - Math.max(34, this.w * .08); },
+  unit(y) { const base = clamp(Math.min(this.w / 5.2, this.h / 3.1), 46, 96); return base * (.78 + .28 * clamp((y - this.top()) / (this.bottom() - this.top()), 0, 1)); },
+  basket() { const r = clamp(this.h * .13, 26, 40); return { x: this.w - r - 8, y: this.h - r - 4, r }; },
+  resize() {
+    const wrap = $('#garden-wrap'); this.w = Math.max(200, wrap.clientWidth); this.h = Math.max(140, wrap.clientHeight); this.ctx = fitCanvas(this.cv, this.w, this.h);
+    this.buildDeco(); this.pets.forEach(p => { p.x = clamp(p.x, this.left(), this.right()); p.y = clamp(p.y, this.top(), this.bottom()); });
+    this.sync();
+  },
+  buildDeco() {
+    const [c, ctx] = offscreen(this.w, this.h); this.deco = c; const W = this.w, H = this.h;
+    wash(ctx, W / 2, H * .62, W * .5, H * .36, '#b9d3a6', .55, 901, 3, .1, false);
+    wash(ctx, W / 2, H * .66, W * .44, H * .28, '#a9c99a', .35, 902, 2, .12, false);
+    const R = rng(77);
+    for (let i = 0; i < 9; i++) { const a = R() * TAU, rr = .78 + R() * .2; const x = W / 2 + Math.cos(a) * W * .46 * rr, y = H * .62 + Math.sin(a) * H * .32 * rr; if (y < H * .3) continue; flower(ctx, x, y, clamp(H * .045, 7, 13), ['#f6c6cf', '#fbe7a8', '#e2d6f2', '#fff7ee'][i % 4], 950 + i); }
+    for (let i = 0; i < 6; i++) grassTuft(ctx, W * (.12 + R() * .76), H * (.4 + R() * .5), clamp(H * .05, 8, 14), 'rgba(111,143,106,.7)', 970 + i);
+    // little welcome sign
+    const sx = Math.max(24, W * .06), sy = H * .34; ctx.fillStyle = '#a57b5c'; ctx.fillRect(sx - 2, sy, 4, H * .16); ctx.fillStyle = '#f3e4cf'; roundRectPath(ctx, sx - 22, sy - 12, 44, 22, 6); ctx.fill(); ctx.strokeStyle = 'rgba(94,67,52,.45)'; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.fillStyle = '#7a5541'; ctx.font = `800 10px ${getComputedStyle(document.body).fontFamily}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('Garden', sx, sy - 1);
+  },
+  sync() {
+    if (!this.w) return;
+    const metTypes = CHAR_ORDER.filter(type => type === 'mochi' || Save.data.met[type]);
+    for (const type of metTypes) {
+      if (this.pets.find(p => p.type === type)) continue;
+      const slot = metTypes.indexOf(type); const fresh = this.pets.length > 0 && this.ready;
+      const x = fresh ? (Math.random() < .5 ? -40 : this.w + 40) : lerp(this.left(), this.right() - this.basket().r * 1.4, (slot + .5) / metTypes.length) + (Math.random() - .5) * 14;
+      const y = lerp(this.top(), this.bottom(), slot % 2 ? .75 : .35) + (Math.random() - .5) * 10;
+      const p = { type, x, y, tx: x, ty: y, state: 'idle', timer: .5 + Math.random() * 2, face: Math.random() < .5 ? -1 : 1, hopPh: 0, hopY: 0, sx: 1, sy: 1, rot: 0, expr: null, blinkAt: Math.random() * 3, blink: 0, phase: Math.random() * TAU, greetCd: 3 + Math.random() * 4, meterT: 0, speed: 1, heartT: 0, zzzT: 0 };
+      if (fresh) { p.state = 'walk'; p.tx = lerp(this.left(), this.right(), .3 + Math.random() * .4); p.ty = y; p.speed = 1.4; p.expr = 'excited'; this.toastIn = type; }
+      this.pets.push(p);
+    }
+    this.ready = true; this.updateTip();
+  },
+  updateTip() {
+    const el = $('#garden-tip'); if (!el) return; const treats = Save.data.treats || 0; const n = this.pets.length; const tips = Save.data.petTips || 0;
+    let msg;
+    if (tips === 0) msg = 'Tap Mochi to say hello';
+    else if (tips === 1) msg = 'Hold a friend for a cuddle';
+    else if (treats > 0) msg = `Drag an acorn onto a friend to feed them`;
+    else msg = n < 6 ? `Play puzzles to earn acorns and meet ${6 - n} more friend${6 - n === 1 ? '' : 's'}` : 'Play puzzles to earn acorns for your friends';
+    el.textContent = msg;
+  },
+  advanceTip(level) { if ((Save.data.petTips || 0) < level) { Save.data.petTips = level; Save.save(); this.updateTip(); } },
+  setState(p, st, dur) { p.state = st; p.timer = dur; if (st !== 'walk' && st !== 'goEat') p.speed = 1; },
+  pos(e) { const r = this.cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; },
+  petAt(x, y) { const order = this.pets.slice().sort((a, b) => b.y - a.y); return order.find(p => { const u = this.unit(p.y); return Math.abs(x - p.x) < u * .5 && y > p.y - u * .75 && y < p.y + u * .2; }); },
+  down(e) {
+    Audio.init(); Audio.resume(); e.preventDefault(); const [x, y] = this.pos(e); try { this.cv.setPointerCapture(e.pointerId); } catch (err) {}
+    const b = this.basket();
+    if (Math.hypot(x - b.x, y - b.y) < b.r * 1.15) {
+      if ((Save.data.treats || 0) > 0) { this.drag = { x, y, sx: x, sy: y, moved: false }; Audio.pop(); }
+      else { this.basketWob = .6; Audio.bump(); UI.toast('Finish puzzles to earn acorns for your friends.'); }
+      return;
+    }
+    const p = this.petAt(x, y);
+    if (p) { this.press = { pet: p, x, y, t0: this.t, moved: false }; return; }
+    this.press = { ground: true, x, y, t0: this.t, moved: false };
+  },
+  move(e) {
+    const [x, y] = this.pos(e);
+    if (this.drag) { this.drag.x = x; this.drag.y = y; if (Math.hypot(x - this.drag.sx, y - this.drag.sy) > 8) this.drag.moved = true; return; }
+    if (this.press && Math.hypot(x - this.press.x, y - this.press.y) > 14) this.press.moved = true;
+  },
+  up(e) {
+    const [x, y] = this.pos(e);
+    if (this.drag) {
+      const d = this.drag; this.drag = null; const target = d.moved ? this.petAt(x, y) : null;
+      Save.data.treats--; Save.save();
+      if (target) this.feed(target);
+      else { const b = this.basket(); const tx = d.moved ? clamp(x, this.left(), this.right()) : lerp(this.left(), this.right(), .3 + Math.random() * .4); const ty = d.moved ? clamp(y, this.top(), this.bottom()) : lerp(this.top(), this.bottom(), .4 + Math.random() * .4); this.treats.push({ x: d.moved ? x : b.x, y: d.moved ? y : b.y, tx, ty, t: 0, landed: false, claimed: null }); Audio.tap(); }
+      this.updateTip(); return;
+    }
+    const pr = this.press; this.press = null; if (!pr) return;
+    if (pr.pet) {
+      const p = pr.pet;
+      if (p.state === 'cuddle') { this.setState(p, 'happy', .9); p.expr = 'happy'; this.advanceTip(2); Save.save(); return; }
+      if (!pr.moved) this.pat(p);
+      return;
+    }
+    if (pr.ground && !pr.moved) this.call(x, y);
+  },
+  pat(p) {
+    const wasNap = p.state === 'nap';
+    this.setState(p, 'happy', .9); p.hopPh = 0; p.expr = wasNap ? 'confused' : 'celebrating'; p.sx = 1.15; p.sy = .85; p.meterT = 2.2;
+    for (let i = 0; i < (wasNap ? 1 : 3); i++) this.fx.push({ k: 'heart', x: p.x + (Math.random() - .5) * 20, y: p.y - this.unit(p.y) * .7, vx: (Math.random() - .5) * 30, vy: -40 - Math.random() * 20, life: 0, max: 1.1, s: 6 + Math.random() * 3 });
+    Audio.pet(p.type); Save.setHappy(p.type, Save.happy(p.type) + 3); Save.save(); this.advanceTip(1); this.checkJoy(p);
+  },
+  call(x, y) {
+    const tx = clamp(x, this.left(), this.right()), ty = clamp(y, this.top(), this.bottom());
+    const free = this.pets.filter(p => p.state !== 'eat' && p.state !== 'goEat' && p.state !== 'dance'); if (!free.length) return;
+    free.sort((a, b) => Math.hypot(a.x - tx, a.y - ty) - Math.hypot(b.x - tx, b.y - ty)); const p = free[0];
+    p.tx = tx; p.ty = ty; p.speed = 1.6; this.setState(p, 'walk', 0); p.expr = 'curious'; this.callMark = { x: tx, y: ty, t: 0 }; Audio.tap();
+  },
+  feed(p) {
+    this.setState(p, 'eat', 1.4); p.expr = 'excited'; p.meterT = 2.6; Audio.munch();
+    Save.setHappy(p.type, Save.happy(p.type) + 22); Save.save(); this.checkJoy(p, 1.4);
+  },
+  checkJoy(p, delay = 0) { if (Save.happy(p.type) >= 100 && !p.danced) { p.danced = true; p.danceAt = this.t + delay + .5; } },
+  arrange() { // tidy line-up, used for the share preview
+    this.pets.forEach((p, i) => { p.x = lerp(this.left() + 20, this.right() - 20, this.pets.length === 1 ? .5 : i / (this.pets.length - 1)); p.y = lerp(this.top(), this.bottom(), .55 + (i % 2) * .12); p.state = 'idle'; p.timer = 99; p.face = i < this.pets.length / 2 ? 1 : -1; p.expr = 'happy'; });
+  },
+  update(dt) {
+    this.t += dt; const motion = UI.motion; const pets = this.pets;
+    if (this.basketWob > 0) this.basketWob -= dt;
+    if (this.callMark) { this.callMark.t += dt; if (this.callMark.t > .8) this.callMark = null; }
+    // hold-to-cuddle
+    if (this.press && this.press.pet && !this.press.moved && this.t - this.press.t0 > .35 && this.press.pet.state !== 'cuddle') { const p = this.press.pet; this.setState(p, 'cuddle', 99); p.expr = 'celebrating'; p.meterT = 99; Audio.purr(); }
+    // treats arc to the ground; nearest free pet trots over
+    for (let i = this.treats.length - 1; i >= 0; i--) {
+      const tr = this.treats[i]; if (!tr.landed) { tr.t += dt * 2.4; const k = Math.min(1, tr.t); tr.cx = lerp(tr.x, tr.tx, k); tr.cy = lerp(tr.y, tr.ty, k) - Math.sin(k * Math.PI) * 50; if (k >= 1) { tr.landed = true; tr.cx = tr.tx; tr.cy = tr.ty; } }
+      if (tr.landed && !tr.claimed) { const free = pets.filter(p => ['idle', 'walk', 'sniff', 'nap', 'happy'].includes(p.state)); if (free.length) { free.sort((a, b) => Math.hypot(a.x - tr.cx, a.y - tr.cy) - Math.hypot(b.x - tr.cx, b.y - tr.cy)); const p = free[0]; tr.claimed = p; p.target = tr; p.tx = tr.cx + (p.x < tr.cx ? -12 : 12); p.ty = tr.cy; p.speed = 1.8; this.setState(p, 'goEat', 0); p.expr = 'excited'; } }
+    }
+    for (const p of pets) {
+      const u = this.unit(p.y);
+      p.blinkAt -= dt; if (p.blinkAt < 0) { p.blink = .14; p.blinkAt = 2 + Math.random() * 3.5; } if (p.blink > 0) p.blink -= dt;
+      p.sx += (1 - p.sx) * Math.min(1, dt * 10); p.sy += (1 - p.sy) * Math.min(1, dt * 10); if (p.meterT > 0 && p.meterT < 50) p.meterT -= dt; p.greetCd -= dt;
+      p.hopY = 0; p.rot = 0;
+      if (p.danceAt && this.t > p.danceAt && ['idle', 'walk', 'sniff', 'happy'].includes(p.state)) { p.danceAt = 0; this.setState(p, 'dance', 2.2); p.expr = 'celebrating'; Audio.complete(); for (let i = 0; i < 8; i++) this.fx.push({ k: 'heart', x: p.x + (Math.random() - .5) * 30, y: p.y - u * .6, vx: (Math.random() - .5) * 60, vy: -50 - Math.random() * 30, life: 0, max: 1.4, s: 6 + Math.random() * 4 }); UI.toast(`${CHARS[p.type].name} is overjoyed!`); }
+      switch (p.state) {
+        case 'idle': p.timer -= dt; if (motion && p.timer <= 0) { const r = Math.random(); if (r < .55) { p.tx = lerp(this.left(), this.right(), Math.random()); p.ty = lerp(this.top(), this.bottom(), Math.random()); p.speed = .8 + Math.random() * .5; this.setState(p, 'walk', 0); } else if (r < .75) { this.setState(p, 'sniff', 1.6 + Math.random()); p.expr = 'curious'; } else if (r < .9 && Save.happy(p.type) < 85) { this.setState(p, 'nap', 5 + Math.random() * 4); p.expr = 'sleepy'; } else this.setState(p, 'idle', 1 + Math.random() * 2); if (p.state === 'idle' || p.state === 'walk') p.expr = null; } break;
+        case 'walk': case 'goEat': {
+          const dx = p.tx - p.x, dy = p.ty - p.y, d = Math.hypot(dx, dy); const sp = u * 1.1 * p.speed * (motion ? 1 : 4);
+          if (Math.abs(dx) > 2) p.face = dx > 0 ? 1 : -1;
+          if (d < 3) { if (p.state === 'goEat' && p.target) { const tr = p.target; this.treats.splice(this.treats.indexOf(tr), 1); p.target = null; this.feed(p); } else { this.setState(p, 'idle', 1 + Math.random() * 2.5); p.expr = null; p.speed = 1; } break; }
+          const step = Math.min(d, sp * dt); p.x += dx / d * step; p.y += dy / d * step; p.hopPh += dt * 9 * Math.min(1.6, p.speed); if (motion) p.hopY = -Math.abs(Math.sin(p.hopPh)) * u * .1; if (Math.sin(p.hopPh) * Math.sin(p.hopPh - dt * 9) < 0) { p.sx = 1.06; p.sy = .94; }
+          break; }
+        case 'sniff': p.timer -= dt; if (motion) p.rot = Math.sin(this.t * 10) * .04 * p.face; if (p.timer <= 0) { this.setState(p, 'idle', 1); p.expr = null; } break;
+        case 'nap': p.timer -= dt; p.zzzT -= dt; if (p.zzzT <= 0 && motion) { p.zzzT = 1.1; this.fx.push({ k: 'z', x: p.x + u * .25 * p.face, y: p.y - u * .65, vx: 8 * p.face, vy: -16, life: 0, max: 1.8, s: 9 + Math.random() * 3 }); } if (p.timer <= 0) { this.setState(p, 'idle', 1); p.expr = null; } break;
+        case 'happy': p.timer -= dt; p.hopPh += dt * 3.5; if (motion) p.hopY = -Math.sin(Math.min(1, p.hopPh) * Math.PI) * u * .35; if (p.timer <= 0) { this.setState(p, 'idle', 1.5 + Math.random() * 2); p.expr = null; } break;
+        case 'cuddle': if (motion) { p.sx = 1 + Math.sin(this.t * 9) * .06; p.sy = 1 - Math.sin(this.t * 9) * .05; } p.heartT -= dt; if (p.heartT <= 0) { p.heartT = .28; this.fx.push({ k: 'heart', x: p.x + (Math.random() - .5) * u * .6, y: p.y - u * .65, vx: (Math.random() - .5) * 20, vy: -45, life: 0, max: 1, s: 5 + Math.random() * 3 }); Save.setHappy(p.type, Save.happy(p.type) + .8); this.checkJoy(p); } break;
+        case 'eat': p.timer -= dt; if (motion) { p.sy = 1 + Math.sin(this.t * 22) * .07; p.sx = 1 - Math.sin(this.t * 22) * .05; } if (Math.random() < dt * 8) this.fx.push({ k: 'crumb', x: p.x + (Math.random() - .5) * 10, y: p.y - u * .1, vx: (Math.random() - .5) * 50, vy: -40, life: 0, max: .5, s: 2 + Math.random() * 1.5 }); if (p.timer <= 0) { this.setState(p, 'happy', .9); p.hopPh = 0; p.expr = 'celebrating'; for (let i = 0; i < 4; i++) this.fx.push({ k: 'heart', x: p.x, y: p.y - u * .7, vx: (Math.random() - .5) * 40, vy: -50, life: 0, max: 1.2, s: 6 }); } break;
+        case 'dance': p.timer -= dt; if (motion) { const k = 1 - p.timer / 2.2; p.rot = Math.sin(k * Math.PI * 4) * .35; p.hopY = -Math.abs(Math.sin(k * Math.PI * 4)) * u * .3; } if (p.timer <= 0) { this.setState(p, 'idle', 2); p.expr = 'happy'; } break;
+      }
+    }
+    // friends greet each other when they meet
+    if (motion) for (let i = 0; i < pets.length; i++) for (let j = i + 1; j < pets.length; j++) {
+      const a = pets[i], b = pets[j]; const d = Math.hypot(a.x - b.x, (a.y - b.y) * 1.6); const u = this.unit((a.y + b.y) / 2);
+      if (d < u * .85) { const push = (u * .85 - d) * .5 * Math.min(1, dt * 6); const nx = (a.x - b.x) / (d || 1), ny = (a.y - b.y) * 1.6 / (d || 1); a.x += nx * push; b.x -= nx * push; a.y += ny * push * .3; b.y -= ny * push * .3; }
+      if (d < u * 1.05 && a.greetCd <= 0 && b.greetCd <= 0 && ['idle', 'walk'].includes(a.state) && ['idle', 'walk'].includes(b.state)) {
+        a.greetCd = b.greetCd = 14 + Math.random() * 8; a.face = b.x > a.x ? 1 : -1; b.face = -a.face;
+        for (const p of [a, b]) { this.setState(p, 'happy', .9); p.hopPh = 0; p.expr = 'happy'; }
+        this.fx.push({ k: 'heart', x: (a.x + b.x) / 2, y: Math.min(a.y, b.y) - u * .7, vx: 0, vy: -35, life: 0, max: 1.2, s: 7 }); Audio.pop();
+      }
+    }
+    for (const p of pets) { p.x = clamp(p.x, -60, this.w + 60); if (p.state === 'idle' || p.state === 'nap' || p.state === 'sniff') { p.x = clamp(p.x, this.left(), this.right()); p.y = clamp(p.y, this.top(), this.bottom()); } }
+    for (let i = this.fx.length - 1; i >= 0; i--) { const f = this.fx[i]; f.life += dt; if (f.life > f.max) { this.fx.splice(i, 1); continue; } f.x += f.vx * dt; f.y += f.vy * dt; f.vx *= 1 - dt * 1.5; if (f.k === 'crumb') f.vy += 200 * dt; }
+    if (this.toastIn) { UI.toast(`${CHARS[this.toastIn].name} moved into the garden!`); this.toastIn = null; }
+  },
+  draw() {
+    const ctx = this.ctx; if (!ctx) return; const W = this.w, H = this.h, t = this.t; const font = getComputedStyle(document.body).fontFamily;
+    ctx.clearRect(0, 0, W, H); ctx.drawImage(this.deco, 0, 0, W, H);
+    if (this.callMark) { const k = this.callMark.t / .8; ctx.save(); ctx.globalAlpha = 1 - k; ctx.strokeStyle = '#8fae87'; ctx.lineWidth = 2.5; ellipse(ctx, this.callMark.x, this.callMark.y, 8 + k * 22, (8 + k * 22) * .4); ctx.stroke(); ctx.restore(); }
+    for (const tr of this.treats) { ctx.fillStyle = 'rgba(94,67,52,.15)'; ellipse(ctx, tr.cx ?? tr.x, (tr.landed ? tr.cy : tr.ty) + 8, 9, 3); ctx.fill(); drawAcorn(ctx, tr.cx ?? tr.x, tr.cy ?? tr.y, 16); }
+    const order = this.pets.slice().sort((a, b) => a.y - b.y);
+    for (const p of order) {
+      const u = this.unit(p.y);
+      ctx.fillStyle = 'rgba(94,67,52,.16)'; ellipse(ctx, p.x, p.y + u * .02, u * .33 * (1 + p.hopY / u * .8), u * .085); ctx.fill();
+      ctx.save(); ctx.translate(p.x, 0); ctx.scale(p.face, 1);
+      drawCreature(ctx, p.type, 0, p.y - u * .42, u, { t, phase: p.phase, blink: p.blink > 0 ? 1 : 0, hopY: p.hopY, rot: p.rot, sx: p.sx, sy: p.sy, expr: p.expr || undefined, look: p.state === 'walk' || p.state === 'goEat' ? [.6, .1] : p.state === 'sniff' ? [.5, .6] : [0, 0], still: !UI.motion });
+      ctx.restore();
+    }
+    // readable name labels, drawn after everyone so they are never hidden
+    for (const p of order) {
+      const u = this.unit(p.y); const name = CHARS[p.type].name; const fs = clamp(u * .2, 12, 15);
+      ctx.font = `800 ${fs}px ${font}`; const tw = ctx.measureText(name).width; const bw = tw + 16, bh = fs + 9, bx = p.x - bw / 2, by = p.y + u * .1;
+      ctx.fillStyle = 'rgba(251,244,230,.94)'; roundRectPath(ctx, bx, by, bw, bh, bh / 2); ctx.fill(); ctx.strokeStyle = CHARS[p.type].path; ctx.lineWidth = 1.6; ctx.stroke();
+      ctx.fillStyle = '#4a3328'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(name, p.x, by + bh / 2 + .5);
+      if (p.meterT > 0) { const hpy = Save.happy(p.type); const a = Math.min(1, p.meterT * 2); ctx.save(); ctx.globalAlpha = a; const mx = p.x - 2 * 11, my = p.y - u * 1.02 + p.hopY; ctx.fillStyle = 'rgba(251,244,230,.9)'; roundRectPath(ctx, mx - 9, my - 9, 5 * 11 + 7, 17, 8); ctx.fill(); for (let i = 0; i < 5; i++) { const fill = clamp(hpy / 20 - i, 0, 1); drawHeart(ctx, mx + i * 11, my, 4.6, 'rgba(94,67,52,.18)'); if (fill > 0) { ctx.save(); ctx.beginPath(); ctx.rect(mx + i * 11 - 6, my - 6, 12 * fill, 12); ctx.clip(); drawHeart(ctx, mx + i * 11, my, 4.6, '#f08a9a'); ctx.restore(); } } ctx.restore(); }
+    }
+    for (const f of this.fx) { const k = f.life / f.max; ctx.save(); ctx.globalAlpha = 1 - easeIn(k); if (f.k === 'heart') drawHeart(ctx, f.x, f.y, f.s * (1 + k * .3), '#f08a9a'); else if (f.k === 'z') { ctx.fillStyle = '#7a6a8a'; ctx.font = `800 ${f.s}px ${font}`; ctx.textAlign = 'center'; ctx.fillText('z', f.x, f.y); } else { ctx.fillStyle = '#c99a6b'; circle(ctx, f.x, f.y, f.s); ctx.fill(); } ctx.restore(); }
+    // acorn basket
+    const b = this.basket(); const n = Save.data.treats || 0; const wob = this.basketWob > 0 ? Math.sin(this.basketWob * 30) * .12 : 0;
+    ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(wob);
+    ctx.fillStyle = 'rgba(94,67,52,.16)'; ellipse(ctx, 0, b.r * .62, b.r * .9, b.r * .2); ctx.fill();
+    if (n > 0) { drawAcorn(ctx, -b.r * .3, -b.r * .28, b.r * .5); drawAcorn(ctx, b.r * .25, -b.r * .32, b.r * .46); }
+    ctx.fillStyle = '#c99a6b'; ctx.beginPath(); ctx.moveTo(-b.r * .85, -b.r * .15); ctx.lineTo(b.r * .85, -b.r * .15); ctx.lineTo(b.r * .65, b.r * .6); ctx.lineTo(-b.r * .65, b.r * .6); ctx.closePath(); ctx.fill(); ctx.strokeStyle = 'rgba(94,67,52,.55)'; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.strokeStyle = 'rgba(94,67,52,.3)'; ctx.lineWidth = 1; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(-b.r * (.8 - i * .06), b.r * (.05 + i * .18)); ctx.lineTo(b.r * (.8 - i * .06), b.r * (.05 + i * .18)); ctx.stroke(); }
+    ctx.fillStyle = n > 0 ? '#86a67e' : '#b9ab98'; circle(ctx, b.r * .7, -b.r * .55, b.r * .34); ctx.fill(); ctx.strokeStyle = '#fbf4e6'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#fff8ee'; ctx.font = `800 ${Math.round(b.r * .4)}px ${font}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(n), b.r * .7, -b.r * .53);
+    ctx.restore();
+    if (this.drag) { drawAcorn(ctx, this.drag.x, this.drag.y - 10, 18); const tp = this.drag.moved ? this.petAt(this.drag.x, this.drag.y) : null; if (tp) { const u = this.unit(tp.y); ctx.save(); ctx.strokeStyle = CHARS[tp.type].path; ctx.lineWidth = 3; ctx.globalAlpha = .8; ellipse(ctx, tp.x, tp.y, u * .45, u * .14); ctx.stroke(); ctx.restore(); } }
   }
 };
 
@@ -1494,13 +1687,14 @@ function frame(ts) {
   const dt = Math.min(.05, (ts - lastTs) / 1000 || 0); lastTs = ts;
   Ambient.draw(dt, UI.motion);
   if (UI.isScreen('game') && Game.level) { Game.update(dt); Board.render(dt); }
-  if (UI.isScreen('title')) Parade.draw(dt);
+  if (UI.isScreen('title')) { Garden.update(dt); Garden.draw(); }
   if (UI.overlayOpen) Celebrate.draw(dt);
 }
-function resizeAll() { Scenery.resize(); Ambient.resize(); Celebrate.resize(); Parade.resize(); if (Game.level) Board.resize(); }
+function resizeAll() { Scenery.resize(); Ambient.resize(); Celebrate.resize(); Garden.resize(); if (Game.level) Board.resize(); }
 function boot() {
   try { if (location.search.includes('_v=')) history.replaceState(null, '', location.pathname + location.hash); } catch (e) {}
-  Save.load(); Paper.init(); Scenery.init(); Ambient.init(); Board.init(); Celebrate.init(); Parade.init(); UI.init(); Input.init();
+  Save.load(); Paper.init(); Scenery.init(); Ambient.init(); Board.init(); Celebrate.init(); Garden.init(); UI.init(); Input.init();
+  if (typeof Save.data.treats !== 'number') { Save.data.treats = Save.totalStars() + 3; Save.save(); }
   resizeAll();
   let rt = null; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(resizeAll, 120); });
   window.addEventListener('orientationchange', () => setTimeout(resizeAll, 250));
@@ -1512,7 +1706,7 @@ function boot() {
   Updater.init();
 }
 document.addEventListener('DOMContentLoaded', boot);
-window.MochiColony = { Game, Board, UI, Save, LEVELS, AREAS, DAILY, dailyIndex, parseLevel, CHARS, Audio, Updater, drawCreature, drawHome, Scenery, CHAR_ORDER };
+window.MochiColony = { Garden, Game, Board, UI, Save, LEVELS, AREAS, DAILY, dailyIndex, parseLevel, CHARS, Audio, Updater, drawCreature, drawHome, Scenery, CHAR_ORDER };
 </script>
 </body>
 </html>
