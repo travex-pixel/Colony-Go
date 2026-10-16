@@ -29,6 +29,12 @@ friend's path cuts it short. Undo, reset and a hint are always available.
 
 52 levels across six areas, plus a fresh daily puzzle with a streak counter.
 
+## The garden
+
+Friends you meet move into the garden on the home screen. Tap a friend to pet them, hold for a cuddle, or tap the
+grass to call one over. Every new star earns an acorn: drag one from the basket onto a friend, or tap the basket to
+toss one into the grass. Well-fed, well-loved friends do a happy dance. Hungry ones show a little acorn bubble.
+
 ## Releasing an update
 
 Bump the `app-version` meta tag in `index.html` with every deploy. Open copies of the game check it in the
