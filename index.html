@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, maximum-scale=1">
 <meta name="theme-color" content="#f6ecd8">
-<meta name="app-version" content="2026.10.16.3">
+<meta name="app-version" content="2026.10.16.4">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1479,7 +1479,7 @@ const Parade = {
       const hop = c.hopT < 1 && motion ? -Math.sin(c.hopT * Math.PI) * u * .45 : 0; const bob = motion ? Math.sin(t * 2 + c.phase) * u * .02 : 0;
       ctx.fillStyle = 'rgba(94,67,52,.14)'; ellipse(ctx, x, y + u * .42, u * .34 * (1 + hop / u * .6), u * .09); ctx.fill();
       const met = c.type === 'mochi' || Save.data.met[c.type];
-      if (!met) { ctx.save(); ctx.globalAlpha = .28; ctx.filter = 'saturate(0) brightness(.7)'; }
+      if (!met) { ctx.save(); ctx.globalAlpha = .34; ctx.filter = 'saturate(0) brightness(1.25) contrast(.75)'; }
       drawCreature(ctx, c.type, x, y + bob, u, { t, phase: c.phase, blink: c.blink > 0 ? 1 : 0, hopY: hop, expr: c.expr || undefined, sy: c.hopT < 1 ? 1 + Math.sin(c.hopT * Math.PI) * .08 : 1, still: !motion });
       if (!met) { ctx.restore(); ctx.fillStyle = '#5e4334'; ctx.font = `800 ${u * .3}px ${getComputedStyle(document.body).fontFamily}`; ctx.textAlign = 'center'; ctx.globalAlpha = .55; ctx.fillText('?', x, y + u * .12); ctx.globalAlpha = 1; }
       ctx.fillStyle = '#5e4334'; ctx.font = `700 ${Math.max(11, u * .17)}px ${getComputedStyle(document.body).fontFamily}`; ctx.textAlign = 'center'; ctx.globalAlpha = .8; ctx.fillText(met ? CHARS[c.type].name : '???', x, y + u * .68); ctx.globalAlpha = 1;
