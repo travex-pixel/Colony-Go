@@ -1,0 +1,47 @@
+# Publishes the site to GitHub Pages.
+# To choose which game sits at the main address, edit MAIN in site.config.
+# One-time setup: Settings > Pages > Build and deployment > Source: "GitHub Actions".
+name: Deploy to GitHub Pages
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    # Only the repository's default branch publishes the site.
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble site
+        run: |
+          MAIN=$(grep -E '^MAIN=' site.config | cut -d= -f2 | tr -d '[:space:]')
+          echo "Main game: ${MAIN}"
+          mkdir -p _site/classic _site/new
+          cp classic/index.html classic/preview.png classic/icon.png _site/classic/
+          cp index.html preview.png icon.png _site/new/
+          if [ "${MAIN}" = "classic" ]; then
+            cp classic/index.html classic/preview.png classic/icon.png _site/
+          else
+            cp index.html preview.png icon.png _site/
+          fi
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
