@@ -17,8 +17,9 @@ python3 -m http.server 8080
 # then open http://<your-computer-ip>:8080/
 ```
 
-For GitHub Pages, publish the repository root. `preview.png` and `icon.png` are the link preview and app icon
-referenced from the page's meta tags.
+The site is published at https://travex-pixel.github.io/Colony-Go/. `preview.jpg` is the link preview shown when
+the address is shared (about 100 KB, so WhatsApp, iMessage, Facebook and X all show it). `preview.png` and
+`preview-classic.png` are lighter previews used by the frozen classic page.
 
 ## How to play
 

@@ -32,11 +32,15 @@ jobs:
           echo "Main game: ${MAIN}"
           mkdir -p _site/classic _site/new
           cp classic/index.html classic/preview.png classic/icon.png _site/classic/
-          cp index.html preview.png icon.png _site/new/
+          cp index.html preview.png preview.jpg icon.png _site/new/
+          # the combined game's link preview always lives at the site root
+          cp preview.jpg _site/
           if [ "${MAIN}" = "classic" ]; then
-            cp classic/index.html classic/preview.png classic/icon.png _site/
+            cp classic/index.html classic/icon.png _site/
+            # a lighter copy of the classic preview, small enough for WhatsApp
+            cp preview-classic.png _site/preview.png
           else
-            cp index.html preview.png icon.png _site/
+            cp index.html preview.png preview.jpg icon.png _site/
           fi
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
