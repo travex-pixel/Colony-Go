@@ -30,7 +30,7 @@ friend's path cuts it short. Undo, reset and a hint are always available.
 - 2 stars: with only a couple of redraws.
 - 3 stars: a perfect garden, every tile covered (from level 7 onwards).
 
-52 levels across six areas, plus a fresh daily puzzle with a streak counter.
+82 levels across eight areas, plus a fresh daily puzzle with a streak counter.
 
 ## Nibbles
 
