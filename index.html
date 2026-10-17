@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, maximum-scale=1">
 <meta name="theme-color" content="#f6ecd8">
-<meta name="app-version" content="2026.10.16.6">
+<meta name="app-version" content="2026.10.17.2">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Mochi Colony">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Mochi Colony">
-<meta property="og:description" content="A cosy hand-painted puzzle. Guide the little forest spirits home.">
+<meta property="og:description" content="A cosy hand-painted puzzle. Guide the forest spirits home, or help hungry animals nibble cakes into pictures.">
 <meta property="og:image" content="https://travex-pixel.github.io/Colony-Go/preview.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -92,6 +92,15 @@ canvas{display:block;}
 #garden-wrap{position:relative; flex:1; width:100%; max-width:600px; min-height:160px; margin:2px auto 0; touch-action:none;}
 #parade{position:absolute; inset:0; cursor:pointer; touch-action:none;}
 .garden-tip{margin:0 auto 8px; line-height:1.3; font-size:14px; font-weight:800; color:var(--brown); background:rgba(251,244,230,.82); padding:6px 14px; border-radius:14px; box-shadow:0 2px 8px rgba(94,67,52,.1); max-width:92%; text-align:center; min-height:20px;}
+.mode-row{display:flex; gap:12px; justify-content:center; width:100%; max-width:420px;}
+.mode-btn{flex:1; min-width:0; padding:10px 14px 10px 10px; font-size:19px; gap:8px; justify-content:center;}
+.mode-btn canvas{width:44px; height:40px; flex:0 0 auto;}
+.mode-btn.alt{background:linear-gradient(180deg,#f0b48f 0%,#d98d68 100%); box-shadow:0 8px 22px rgba(208,138,108,.35), 0 1px 2px rgba(94,67,52,.15), inset 0 1px 0 rgba(255,255,255,.45), inset 0 -2px 0 rgba(94,67,52,.12);}
+.tabs{display:flex; gap:8px; justify-content:center; padding:4px 16px 2px;}
+.tabs button{appearance:none; border:0; cursor:pointer; font:inherit; font-weight:800; font-size:15px; color:var(--brown-soft); padding:9px 20px; border-radius:18px; background:rgba(251,244,230,.6); box-shadow:0 2px 6px rgba(94,67,52,.1);}
+.tabs button.on{background:linear-gradient(180deg,#fdf6e8,#f1e2c6); color:var(--brown); box-shadow:var(--shadow);}
+.btn.nudge{animation:nudge 1s ease-in-out infinite;}
+@keyframes nudge{0%,100%{transform:none} 50%{transform:translateY(-4px) scale(1.06)}}
 .row-btns{display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
 .progress-pill.streak{color:var(--moss-deep); background:rgba(169,201,154,.35);}
 .progress-pill[hidden]{display:none;}
@@ -146,14 +155,14 @@ canvas{display:block;}
 .pips i{display:block; width:11px; height:11px; border-radius:50%; background:rgba(94,67,52,.15); box-shadow:inset 0 0 0 2px rgba(255,255,255,.35); transition:transform .3s ease, background .3s ease;}
 .pips i.on{transform:scale(1.15); box-shadow:0 0 0 2px rgba(255,255,255,.7);}
 .hud-right .home-count{font-size:12px; font-weight:800; color:var(--brown-soft);}
-#board-wrap{flex:1; position:relative; min-height:0; display:flex; align-items:center; justify-content:center; padding:4px 10px; touch-action:none;}
+#nb-wrap,#board-wrap{flex:1; position:relative; min-height:0; display:flex; align-items:center; justify-content:center; padding:4px 10px; touch-action:none;}
 #board{touch-action:none; cursor:pointer; border-radius:26px;}
-#hint-bubble{
+#nb-hint,#hint-bubble{
   position:absolute; left:50%; bottom:6px; transform:translate(-50%,8px); opacity:0;
   background:rgba(251,244,230,.95); color:var(--brown); font-size:15px; font-weight:700; padding:10px 16px; border-radius:18px;
   box-shadow:var(--shadow); max-width:88%; text-align:center; pointer-events:none; transition:opacity .3s ease, transform .3s ease;
 }
-#hint-bubble.show{opacity:1; transform:translate(-50%,0);}
+#nb-hint.show,#hint-bubble.show{opacity:1; transform:translate(-50%,0);}
 .controls{display:flex; justify-content:center; align-items:flex-start; gap:22px; padding:8px 12px 12px; min-height:92px;}
 /* ---------- overlay ---------- */
 .overlay{
@@ -188,17 +197,18 @@ canvas{display:block;}
   opacity:0; transition:opacity .25s ease, transform .25s ease; pointer-events:none; max-width:86%; text-align:center; z-index:5;
 }
 #toast.show{opacity:1; transform:translate(-50%,0);}
-#intro{
+#nb-intro,#intro{
   position:absolute; left:50%; top:8px; transform:translate(-50%,-14px); opacity:0; pointer-events:none; z-index:4;
   display:flex; align-items:center; gap:12px; padding:10px 16px 10px 10px; max-width:92%;
   background:linear-gradient(180deg,#fdf7ea,#f3e6cf); border-radius:22px; box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.9);
   transition:opacity .35s ease, transform .35s ease;
 }
-#intro.show{opacity:1; transform:translate(-50%,0);}
-#intro canvas{width:76px; height:56px; flex:0 0 auto;}
-#intro .txt{font-size:14px; font-weight:700; color:var(--brown); line-height:1.3;}
-#intro .txt b{display:block; font-size:16px; font-weight:800;}
-#intro .txt span{color:var(--brown-soft);}
+#nb-intro.show,#intro.show{opacity:1; transform:translate(-50%,0);}
+#nb-intro canvas,#intro canvas{width:76px; height:56px; flex:0 0 auto;}
+#nb-intro,#intro{width:max-content;}
+#nb-intro .txt,#intro .txt{font-size:14px; font-weight:700; color:var(--brown); line-height:1.3;}
+#nb-intro .txt b,#intro .txt b{display:block; font-size:16px; font-weight:800;}
+#nb-intro .txt span,#intro .txt span{color:var(--brown-soft);}
 #toast.action{pointer-events:auto; cursor:pointer; background:linear-gradient(180deg,#86a67e,#6f8f6a); color:#fff8ee;}
 .treats-earned{display:inline-flex; align-items:center; gap:8px; margin:0 auto 12px; padding:6px 14px 6px 8px; border-radius:16px; background:rgba(226,180,100,.2); color:#7a5541; font-weight:800; font-size:14px;}
 .treats-earned[hidden]{display:none;}
@@ -232,7 +242,7 @@ canvas{display:block;}
     <div id="garden-wrap"><canvas id="parade" aria-label="The colony garden. Tap a friend to pet them." role="img"></canvas></div>
     <p class="garden-tip" id="garden-tip">Tap Mochi to say hello</p>
     <div class="title-actions">
-      <button class="btn btn-primary" id="btn-play">Play</button>
+      <div class="mode-row"><button class="btn btn-primary mode-btn" id="btn-play" aria-label="Play Paths"><canvas width="88" height="80" data-ico="mochi" aria-hidden="true"></canvas><span>Paths</span></button><button class="btn btn-primary mode-btn alt" id="btn-nibble" aria-label="Play Nibbles"><canvas width="88" height="80" data-ico="bunny" aria-hidden="true"></canvas><span>Nibbles</span></button></div>
       <div class="row-btns"><button class="btn btn-soft" id="btn-daily">Today's puzzle</button><button class="btn btn-soft" id="btn-levels">Levels</button></div>
       <div class="progress-pill" id="title-progress"><span>Colony</span><span class="bar"><i></i></span><span class="pct">0%</span></div>
       <div class="progress-pill streak" id="title-streak" hidden></div>
@@ -246,6 +256,7 @@ canvas{display:block;}
       <h2>The Colony Map</h2>
       <div class="spacer"></div>
     </div>
+    <div class="tabs" role="tablist"><button data-m="path" class="on" role="tab">Paths</button><button data-m="nibble" role="tab">Nibbles</button></div>
     <div class="levels-scroll" id="levels-scroll"></div>
   </section>
 
@@ -265,6 +276,25 @@ canvas{display:block;}
       <div class="ctrl"><button class="btn icon-btn" id="btn-undo" aria-label="Undo last path"></button><div class="btn-label">Undo</div></div>
       <div class="ctrl"><button class="btn icon-btn" id="btn-hint" aria-label="Show a hint"></button><div class="btn-label">Hint</div></div>
       <div class="ctrl"><button class="btn icon-btn" id="btn-reset" aria-label="Reset level"></button><div class="btn-label">Reset</div></div>
+    </footer>
+  </section>
+
+  <!-- ===== NIBBLES ===== -->
+  <section id="screen-nibble" class="screen" aria-label="Nibble puzzle">
+    <header class="hud">
+      <button class="btn icon-btn" id="nb-menu" aria-label="Back to levels"></button>
+      <div class="hud-center"><div class="lvl" id="nb-level">Nibbles 1</div><div class="name" id="nb-name">First Nibble</div></div>
+      <div class="hud-right"><div class="home-count" id="nb-left"></div></div>
+    </header>
+    <div id="nb-wrap">
+      <canvas id="nb-board" aria-label="Cake board"></canvas>
+      <div id="nb-hint" role="status"></div>
+      <div id="nb-intro" role="status" aria-live="polite"><canvas width="152" height="112" aria-hidden="true"></canvas><div class="txt"></div></div>
+    </div>
+    <footer class="controls">
+      <div class="ctrl"><button class="btn icon-btn" id="nb-undo" aria-label="Undo last nibble"></button><div class="btn-label">Undo</div></div>
+      <div class="ctrl"><button class="btn icon-btn" id="nb-hintbtn" aria-label="Show a hint"></button><div class="btn-label">Hint</div></div>
+      <div class="ctrl"><button class="btn icon-btn" id="nb-reset" aria-label="Reset cake"></button><div class="btn-label">Reset</div></div>
     </footer>
   </section>
 
@@ -367,7 +397,7 @@ const Audio = {
 // --------------------------------------------------------------- storage
 const Save = {
   KEY: 'mochi-colony-save-v1', ok: true,
-  data: { stars: {}, sound: true, motion: null, lastLevel: 0, met: {}, daily: { done: {}, streak: 0, last: '' }, perfectStreak: 0, treats: null, pets: {}, petTips: 0 },
+  data: { stars: {}, sound: true, motion: null, lastLevel: 0, met: {}, daily: { done: {}, streak: 0, last: '' }, perfectStreak: 0, treats: null, pets: {}, petTips: 0, nstars: {}, nLast: 0 },
   load() {
     try { const raw = localStorage.getItem(this.KEY); if (raw) { const d = JSON.parse(raw); if (d && typeof d === 'object') Object.assign(this.data, d); } }
     catch (e) { this.ok = false; }
@@ -375,6 +405,10 @@ const Save = {
   save() { try { localStorage.setItem(this.KEY, JSON.stringify(this.data)); } catch (e) { this.ok = false; } },
   stars(i) { return this.data.stars[i] || 0; },
   setStars(i, n) { const prev = this.stars(i); if (n > prev) { this.data.stars[i] = n; this.data.treats = (this.data.treats || 0) + (n - prev); this.save(); } },
+  nStars(i) { return (this.data.nstars || {})[i] || 0; },
+  setNStars(i, n) { this.data.nstars = this.data.nstars || {}; const prev = this.nStars(i); if (n > prev) { this.data.nstars[i] = n; this.data.treats = (this.data.treats || 0) + (n - prev); } this.save(); },
+  nUnlocked() { let n = 1; for (let i = 0; i < NLEVELS.length; i++) if (this.nStars(i) > 0) n = Math.max(n, i + 2); return Math.min(n, NLEVELS.length); },
+  nTotal() { let s = 0; for (let i = 0; i < NLEVELS.length; i++) s += this.nStars(i); return s; },
   happy(type) { const p = this.data.pets[type]; if (!p) return 50; const hours = Math.max(0, (Date.now() - p.t) / 36e5); return clamp(p.h - hours * 3, 0, 100); },
   setHappy(type, h) { this.data.pets[type] = { h: clamp(h, 0, 100), t: Date.now() }; },
   unlockedCount() { let n = 1; for (let i = 0; i < LEVELS.length; i++) if (this.stars(i) > 0) n = Math.max(n, i + 2); return Math.min(n, LEVELS.length); },
@@ -850,6 +884,7 @@ function drawMotif(ctx, kind, x, y, s, color) {
 }
 
 function drawCreature(ctx, type, x, y, u, a = {}) {
+  if (ANIMALS[type]) return drawAnimal(ctx, type, x, y, u, a);
   const C = CHARS[type]; const t = a.t || 0;
   const breath = a.still ? 0 : Math.sin(t * 2.4 + (a.phase || 0)) * .02;
   ctx.save(); ctx.translate(x, y + u * .42 + (a.hopY || 0)); ctx.scale((a.sx || 1) * (1 - breath * .6), (a.sy || 1) * (1 + breath)); if (a.rot) ctx.rotate(a.rot);
@@ -1357,6 +1392,8 @@ const UI = {
   screen: 'title', overlayOpen: false, motion: true, toastT: null, hintT: null,
   init() {
     const set = (id, icon) => { $(id).innerHTML = ICONS[icon]; };
+    set('#nb-menu', 'back'); set('#nb-undo', 'undo'); set('#nb-hintbtn', 'hint'); set('#nb-reset', 'reset');
+    document.querySelectorAll('canvas[data-ico]').forEach(cv => { const c = cv.getContext('2d'); c.setTransform(2, 0, 0, 2, 0, 0); drawCreature(c, cv.dataset.ico, 22, 19, 32, { still: true, expr: 'happy' }); });
     set('#btn-sound', 'sound'); set('#btn-motion', 'motion'); set('#btn-levels-back', 'back'); set('#btn-menu', 'back'); set('#btn-undo', 'undo'); set('#btn-hint', 'hint'); set('#btn-reset', 'reset');
     this.buildLogo();
     const prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1364,7 +1401,11 @@ const UI = {
     this.applySettings();
     const click = (id, fn) => { const el = $(id); el.addEventListener('click', e => { Audio.init(); Audio.resume(); Audio.tap(); fn(e); }); };
     click('#btn-play', () => this.play());
-    click('#btn-levels', () => this.show('levels'));
+    click('#btn-nibble', () => this.playNibble());
+    click('#nb-menu', () => { Nibble.press = null; this.levelsMode = 'nibble'; this.show('levels'); });
+    click('#nb-undo', () => Nibble.undo()); click('#nb-reset', () => Nibble.reset()); click('#nb-hintbtn', () => Nibble.hint());
+    document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => { Audio.init(); Audio.tap(); this.levelsMode = b.dataset.m; this.buildLevels(); }));
+    click('#btn-levels', () => { this.levelsMode = this.mode || 'path'; this.show('levels'); });
     click('#btn-daily', () => { if (DAILY.length) this.startLevel(-1); });
     click('#btn-levels-back', () => this.show('title'));
     click('#btn-menu', () => { Game.cancelStroke(); this.show('levels'); });
@@ -1373,10 +1414,10 @@ const UI = {
     click('#btn-hint', () => Game.showHint());
     click('#btn-sound', () => { Audio.enabled = !Audio.enabled; Save.data.sound = Audio.enabled; Save.save(); this.applySettings(); });
     click('#btn-motion', () => { this.motion = !this.motion; Save.data.motion = this.motion; Save.save(); this.applySettings(); Ambient.reset(); });
-    click('#btn-next', () => { this.hideComplete(); if (Game.idx === -1) { this.show('title'); return; } const n = Game.idx + 1; if (n < LEVELS.length) this.startLevel(n); else this.show('levels'); });
-    click('#btn-replay', () => { this.hideComplete(); this.startLevel(Game.idx); });
-    click('#btn-complete-levels', () => { this.hideComplete(); this.show('levels'); });
-    document.addEventListener('keydown', e => { if (!this.isScreen('game') || this.overlayOpen) return; if (e.key === 'z' || e.key === 'u') Game.undo(); if (e.key === 'r') Game.reset(); if (e.key === 'h') Game.showHint(); if (e.key === 'Escape') this.show('levels'); });
+    click('#btn-next', () => { this.hideComplete(); if (this.mode === 'nibble') { const n = Nibble.idx + 1; if (n < NLEVELS.length) Nibble.start(n); else { this.levelsMode = 'nibble'; this.show('levels'); } return; } if (Game.idx === -1) { this.show('title'); return; } const n = Game.idx + 1; if (n < LEVELS.length) this.startLevel(n); else this.show('levels'); });
+    click('#btn-replay', () => { this.hideComplete(); if (this.mode === 'nibble') Nibble.start(Nibble.idx); else this.startLevel(Game.idx); });
+    click('#btn-complete-levels', () => { this.hideComplete(); this.levelsMode = this.mode; this.show('levels'); });
+    document.addEventListener('keydown', e => { if (this.isScreen('nibble') && !this.overlayOpen) { if (e.key === 'z' || e.key === 'u') Nibble.undo(); if (e.key === 'r') Nibble.reset(); if (e.key === 'h') Nibble.hint(); if (e.key === 'Escape') { this.levelsMode = 'nibble'; this.show('levels'); } return; } if (!this.isScreen('game') || this.overlayOpen) return; if (e.key === 'z' || e.key === 'u') Game.undo(); if (e.key === 'r') Game.reset(); if (e.key === 'h') Game.showHint(); if (e.key === 'Escape') this.show('levels'); });
     this.buildLevels(); this.updateTitleProgress();
   },
   applySettings() {
@@ -1391,7 +1432,39 @@ const UI = {
     this.hideHintBubble();
   },
   play() { let n = -1; for (let i = 0; i < LEVELS.length; i++) if (Save.stars(i) === 0) { n = i; break; } if (n < 0) n = clamp(Save.data.lastLevel || 0, 0, LEVELS.length - 1); n = Math.min(n, Save.unlockedCount() - 1); this.startLevel(n); },
-  startLevel(i) { this.show('game'); Game.load(i); },
+  startLevel(i) { this.mode = 'path'; this.show('game'); Game.load(i); },
+  playNibble() { let n = -1; for (let i = 0; i < NLEVELS.length; i++) if (Save.nStars(i) === 0) { n = i; break; } if (n < 0) n = clamp(Save.data.nLast || 0, 0, NLEVELS.length - 1); n = Math.min(n, Save.nUnlocked() - 1); Nibble.start(n); },
+  buildNibbleLevels(root) {
+    const unlocked = Save.nUnlocked(); const cur = clamp(Save.data.nLast || 0, 0, NLEVELS.length - 1);
+    N_AREAS.forEach(area => {
+      const done = area.levels.filter(i => Save.nStars(i) > 0).length; const locked = area.levels[0] >= unlocked;
+      const sec = document.createElement('section'); sec.className = 'area' + (locked ? ' locked' : '');
+      sec.innerHTML = `<div class="area-head"><h3>${area.name}</h3><span>${locked ? 'Locked' : done + ' / ' + area.levels.length + ' complete'}</span></div><div class="level-grid"></div>`;
+      const grid = $('.level-grid', sec);
+      area.levels.forEach(i => {
+        const b = document.createElement('button'); const isLocked = i >= unlocked; const st = Save.nStars(i);
+        b.className = 'level-card' + (isLocked ? ' locked' : '') + (i === cur && !isLocked ? ' current' : ''); b.setAttribute('aria-label', `Nibbles level ${i + 1}, ${NLEVELS[i].name}${isLocked ? ', locked' : ', ' + st + ' stars'}`);
+        b.innerHTML = `<div class="num">${isLocked ? '&#8226;' : i + 1}</div><div class="stars">${isLocked ? '' : [0, 1, 2].map(k => k < st ? ICONS.star : ICONS.starOff).join('')}</div>`;
+        if (!isLocked) b.addEventListener('click', () => { Audio.init(); Audio.resume(); Audio.tap(); Nibble.start(i); }); else b.disabled = true;
+        grid.appendChild(b);
+      });
+      root.appendChild(sec);
+    });
+  },
+  showNibbleComplete({ stars, earned, newArea }) {
+    const d = NLEVELS[Nibble.idx]; const last = Nibble.idx === NLEVELS.length - 1;
+    $('#complete-title').textContent = last ? 'The bakery is complete!' : stars === 3 ? 'Picture perfect!' : 'All nibbled!';
+    $('#complete-sub').textContent = `Nibbles ${Nibble.idx + 1} · ${d.name}`;
+    $('#complete-stars').innerHTML = [0, 1, 2].map(k => k < stars ? ICONS.flowerStar : ICONS.flowerStarOff).join('');
+    $('#complete-stars').querySelectorAll('svg').forEach((sv, k) => { sv.classList.add(k < stars ? 'on' : 'off'); sv.style.transitionDelay = (.25 + k * .22) + 's'; });
+    $('#complete-msg').textContent = stars === 3 ? 'Every nibble in the right place.' : stars === 2 ? 'Lovely! Fewer spoiled tries or undos earns three stars.' : 'Done! Hold a friend to peek before they nibble.';
+    const te = $('#complete-treats'); if (earned > 0) { te.hidden = false; te.innerHTML = `<canvas width="52" height="52" aria-hidden="true"></canvas><span>+${earned} acorn${earned === 1 ? '' : 's'} for the garden</span>`; const cx = $('canvas', te).getContext('2d'); cx.setTransform(2, 0, 0, 2, 0, 0); drawAcorn(cx, 13, 12, 15); } else te.hidden = true;
+    const un = $('#complete-unlock'); if (newArea) { un.hidden = false; un.textContent = `New bakery unlocked: ${newArea.name}`; } else un.hidden = true;
+    $('#btn-replay').textContent = 'Replay'; $('#btn-next').textContent = last ? 'Back to the map' : 'Next cake';
+    const nx = NLEVELS[Nibble.idx + 1]; const nf = nx ? [...new Set(nx.animals.map(a => a.type))].find(t => !Save.data.met[t]) : null;
+    $('#complete-next').textContent = last ? `${Save.nTotal()} of ${NLEVELS.length * 3} bakery stars collected` : nf ? `Up next: meet ${ANIMALS[nf].name}!` : `Up next: ${nx.name}`;
+    this.overlayOpen = true; $('#overlay-complete').classList.add('show'); Celebrate.start();
+  },
   buildLogo() {
     const svg = $('#logo');
     svg.innerHTML = `
@@ -1405,7 +1478,7 @@ const UI = {
       <g fill="#a9c99a" stroke="#6f8f6a" stroke-width="1"><path d="M312 44 c2 -14 12 -20 20 -16 c-2 10 -10 16 -20 16z"/><path d="M312 44 c-10 -8 -22 -4 -24 6 c10 2 18 0 24 -6z"/><path d="M312 44 v12" stroke-width="2" fill="none"/></g>`;
   },
   buildLevels() {
-    const root = $('#levels-scroll'); root.innerHTML = ''; const unlocked = Save.unlockedCount(); const cur = clamp(Save.data.lastLevel || 0, 0, LEVELS.length - 1);
+    const root = $('#levels-scroll'); root.innerHTML = ''; const nibbleTab = this.levelsMode === 'nibble'; document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.m === (nibbleTab ? 'nibble' : 'path'))); if (nibbleTab) { this.buildNibbleLevels(root); return; } const unlocked = Save.unlockedCount(); const cur = clamp(Save.data.lastLevel || 0, 0, LEVELS.length - 1);
     if (DAILY.length) { const ds = Save.dailyStars(), st = Save.dailyStreak(); const b = document.createElement('button'); b.className = 'daily-card'; b.innerHTML = `<div><b>Today's puzzle</b><span>${ds ? 'Solved today' : 'A fresh puzzle every day'}${st ? ` · ${st}-day streak` : ''}</span></div><div class="stars">${[0, 1, 2].map(k => k < ds ? ICONS.star : ICONS.starOff).join('')}</div>`; b.addEventListener('click', () => { Audio.init(); Audio.resume(); Audio.tap(); this.startLevel(-1); }); root.appendChild(b); }
     AREAS.forEach(area => {
       const done = area.levels.filter(i => Save.stars(i) > 0).length; const locked = area.levels[0] >= unlocked;
@@ -1423,7 +1496,7 @@ const UI = {
     });
   },
   updateTitleProgress() {
-    const total = LEVELS.length * 3, got = Save.totalStars(); $('#title-progress .bar i').style.width = Math.round(got / total * 100) + '%'; $('#title-progress .pct').textContent = `${got} / ${total} ★`;
+    const total = (LEVELS.length + NLEVELS.length) * 3, got = Save.totalStars() + Save.nTotal(); $('#title-progress .bar i').style.width = Math.round(got / total * 100) + '%'; $('#title-progress .pct').textContent = `${got} / ${total} ★`;
     const st = Save.dailyStreak(), ds = Save.dailyStars(); const el = $('#title-streak'); el.hidden = !(st || ds); el.textContent = ds ? `Today's puzzle solved${st > 1 ? ` · ${st}-day streak` : ''}` : `${st}-day streak · today's puzzle is waiting`;
     $('#btn-daily').textContent = ds ? "Today's puzzle ✓" : "Today's puzzle";
   },
@@ -1459,7 +1532,7 @@ const UI = {
     $('#complete-msg').textContent = msg;
     $('#btn-replay').textContent = L.fill && !perfect ? 'Try for perfect' : 'Replay';
     const te = $('#complete-treats');
-    if (earned > 0) { const hungry = CHAR_ORDER.filter(t => (t === 'mochi' || Save.data.met[t]) && Save.happy(t) < 40).map(t => CHARS[t].name)[0]; te.hidden = false; te.innerHTML = `<canvas width="52" height="52" aria-hidden="true"></canvas><span>+${earned} acorn${earned === 1 ? '' : 's'}${hungry ? ` · ${hungry} is hungry!` : ' for the garden'}</span>`; const cx = $('canvas', te).getContext('2d'); cx.setTransform(2, 0, 0, 2, 0, 0); drawAcorn(cx, 13, 12, 15); }
+    if (earned > 0) { const hungry = ALL_ORDER.filter(t => (t === 'mochi' || Save.data.met[t]) && Save.happy(t) < 40).map(t => CHARS[t].name)[0]; te.hidden = false; te.innerHTML = `<canvas width="52" height="52" aria-hidden="true"></canvas><span>+${earned} acorn${earned === 1 ? '' : 's'}${hungry ? ` · ${hungry} is hungry!` : ' for the garden'}</span>`; const cx = $('canvas', te).getContext('2d'); cx.setTransform(2, 0, 0, 2, 0, 0); drawAcorn(cx, 13, 12, 15); }
     else te.hidden = true;
     const un = $('#complete-unlock'); if (newArea) { un.hidden = false; un.textContent = `New area unlocked: ${newArea.name}`; } else un.hidden = true;
     $('#btn-next').textContent = last ? 'Back to the map' : daily ? 'Done for today' : 'Next level';
@@ -1484,7 +1557,7 @@ const Updater = {
       const r = await fetch(url.toString(), { cache: 'no-store' }); if (!r.ok) return; const html = await r.text();
       const m = html.match(/<meta name="app-version" content="([^"]+)"/); if (!m || m[1] === this.version) return;
       this.pending = true;
-      if (!UI.isScreen('game') || Game.complete) this.apply(); else UI.toast('A new version is ready. Tap to refresh.', { ms: 0, action: () => this.apply() });
+      const busy = (UI.isScreen('game') && !Game.complete) || (UI.isScreen('nibble') && !Nibble.complete); if (!busy) this.apply(); else UI.toast('A new version is ready. Tap to refresh.', { ms: 0, action: () => this.apply() });
     } catch (e) { /* offline or blocked: try again later */ }
   },
   apply() { try { Save.save(); } catch (e) {} const url = new URL(location.href); url.searchParams.set('_v', Date.now().toString(36)); location.replace(url.toString()); }
@@ -1523,7 +1596,7 @@ const Garden = {
   },
   // ground band where feet may stand
   top() { return this.h * .3; }, bottom() { return this.h * .86; }, left() { return Math.max(34, this.w * .08); }, right() { return this.w - Math.max(34, this.w * .08); },
-  unit(y) { const base = clamp(Math.min(this.w / 5.2, this.h / 3.1), 46, 96); return base * (.78 + .28 * clamp((y - this.top()) / (this.bottom() - this.top()), 0, 1)); },
+  unit(y) { const crowd = this.pets.length > 6 ? Math.max(.62, Math.sqrt(6 / this.pets.length)) : 1; const base = clamp(Math.min(this.w / 5.2, this.h / 3.1), 46, 96) * crowd; return base * (.78 + .28 * clamp((y - this.top()) / (this.bottom() - this.top()), 0, 1)); },
   basket() { const r = clamp(this.h * .13, 26, 40); return { x: this.w - r - 8, y: this.h - r - 4, r }; },
   resize() {
     const wrap = $('#garden-wrap'); this.w = Math.max(200, wrap.clientWidth); this.h = Math.max(140, wrap.clientHeight); this.ctx = fitCanvas(this.cv, this.w, this.h);
@@ -1543,14 +1616,14 @@ const Garden = {
   },
   sync() {
     if (!this.w) return;
-    const metTypes = CHAR_ORDER.filter(type => type === 'mochi' || Save.data.met[type]);
+    const metTypes = ALL_ORDER.filter(type => type === 'mochi' || Save.data.met[type]);
     for (const type of metTypes) {
       if (this.pets.find(p => p.type === type)) continue;
       const slot = metTypes.indexOf(type); const fresh = this.pets.length > 0 && this.ready;
-      const x = fresh ? (Math.random() < .5 ? -40 : this.w + 40) : lerp(this.left(), this.right() - this.basket().r * 1.4, (slot + .5) / metTypes.length) + (Math.random() - .5) * 14;
-      const y = lerp(this.top(), this.bottom(), slot % 2 ? .75 : .35) + (Math.random() - .5) * 10;
+      const cols = Math.min(metTypes.length, 6), rowsN = Math.ceil(metTypes.length / 6); const x = fresh ? (Math.random() < .5 ? -40 : this.w + 40) : lerp(this.left(), this.right() - this.basket().r * 1.4, ((slot % cols) + .5) / cols) + (Math.random() - .5) * 14;
+      const y = lerp(this.top(), this.bottom(), rowsN > 1 ? (Math.floor(slot / 6) + .5) / rowsN : (slot % 2 ? .75 : .35)) + (Math.random() - .5) * 10;
       const p = { type, x, y, tx: x, ty: y, state: 'idle', timer: .5 + Math.random() * 2, face: Math.random() < .5 ? -1 : 1, hopPh: 0, hopY: 0, sx: 1, sy: 1, rot: 0, expr: null, blinkAt: Math.random() * 3, blink: 0, phase: Math.random() * TAU, greetCd: 3 + Math.random() * 4, meterT: 0, speed: 1, heartT: 0, zzzT: 0 };
-      if (fresh) { p.state = 'walk'; p.tx = lerp(this.left(), this.right(), .3 + Math.random() * .4); p.ty = y; p.speed = 1.4; p.expr = 'excited'; this.toastIn = type; }
+      if (fresh) { p.state = 'walk'; const spot = this.roomySpot(p); p.tx = spot[0]; p.ty = spot[1]; p.speed = 1.4; p.expr = 'excited'; this.toastIn = type; }
       this.pets.push(p);
     }
     this.ready = true; this.updateTip();
@@ -1561,10 +1634,12 @@ const Garden = {
     if (tips === 0) msg = 'Tap Mochi to say hello';
     else if (tips === 1) msg = 'Hold a friend for a cuddle';
     else if (treats > 0) msg = `Drag an acorn onto a friend to feed them`;
-    else msg = n < 6 ? `Play puzzles to earn acorns and meet ${6 - n} more friend${6 - n === 1 ? '' : 's'}` : 'Play puzzles to earn acorns for your friends';
+    else { const more = ALL_ORDER.length - n; msg = more > 0 ? `Play puzzles to earn acorns and meet ${more} more friend${more === 1 ? '' : 's'}` : 'Play puzzles to earn acorns for your friends'; }
     el.textContent = msg;
   },
   advanceTip(level) { if ((Save.data.petTips || 0) < level) { Save.data.petTips = level; Save.save(); this.updateTip(); } },
+  nearBasket(x, y) { const b = this.basket(); return x > b.x - b.r * 1.8 && y > b.y - b.r * 2.4; },
+  roomySpot(self) { let best = null, bd = -1; for (let k = 0; k < 12; k++) { const x = lerp(this.left(), this.right(), Math.random()), y = lerp(this.top(), this.bottom(), Math.random()); if (this.nearBasket(x, y)) continue; let md = 1e9; for (const q of this.pets) if (q !== self) md = Math.min(md, Math.hypot(q.x - x, (q.y - y) * 1.6), Math.hypot(q.tx - x, (q.ty - y) * 1.6)); if (md > bd) { bd = md; best = [x, y]; } } return best; },
   setState(p, st, dur) { p.state = st; p.timer = dur; if (st !== 'walk' && st !== 'goEat') p.speed = 1; },
   pos(e) { const r = this.cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; },
   petAt(x, y) { const order = this.pets.slice().sort((a, b) => b.y - a.y); return order.find(p => { const u = this.unit(p.y); return Math.abs(x - p.x) < u * .5 && y > p.y - u * .75 && y < p.y + u * .2; }); },
@@ -1641,7 +1716,7 @@ const Garden = {
       p.hopY = 0; p.rot = 0;
       if (p.danceAt && this.t > p.danceAt && ['idle', 'walk', 'sniff', 'happy'].includes(p.state)) { p.danceAt = 0; this.setState(p, 'dance', 2.2); p.expr = 'celebrating'; Audio.complete(); for (let i = 0; i < 8; i++) this.fx.push({ k: 'heart', x: p.x + (Math.random() - .5) * 30, y: p.y - u * .6, vx: (Math.random() - .5) * 60, vy: -50 - Math.random() * 30, life: 0, max: 1.4, s: 6 + Math.random() * 4 }); UI.toast(`${CHARS[p.type].name} is overjoyed!`); }
       switch (p.state) {
-        case 'idle': p.timer -= dt; if (motion && p.timer <= 0) { const r = Math.random(); if (r < .55) { p.tx = lerp(this.left(), this.right(), Math.random()); p.ty = lerp(this.top(), this.bottom(), Math.random()); p.speed = .8 + Math.random() * .5; this.setState(p, 'walk', 0); } else if (r < .75) { this.setState(p, 'sniff', 1.6 + Math.random()); p.expr = 'curious'; } else if (r < .9 && Save.happy(p.type) < 85) { this.setState(p, 'nap', 5 + Math.random() * 4); p.expr = 'sleepy'; } else this.setState(p, 'idle', 1 + Math.random() * 2); if (p.state === 'idle' || p.state === 'walk') p.expr = null; } break;
+        case 'idle': p.timer -= dt; if (motion && p.timer <= 0) { const r = Math.random(); if (r < .55) { const spot = this.roomySpot(p); p.tx = spot[0]; p.ty = spot[1]; p.speed = .8 + Math.random() * .5; this.setState(p, 'walk', 0); } else if (r < .75) { this.setState(p, 'sniff', 1.6 + Math.random()); p.expr = 'curious'; } else if (r < .9 && Save.happy(p.type) < 85) { this.setState(p, 'nap', 5 + Math.random() * 4); p.expr = 'sleepy'; } else this.setState(p, 'idle', 1 + Math.random() * 2); if (p.state === 'idle' || p.state === 'walk') p.expr = null; } break;
         case 'walk': case 'goEat': {
           const dx = p.tx - p.x, dy = p.ty - p.y, d = Math.hypot(dx, dy); const sp = u * 1.1 * p.speed * (motion ? 1 : 4);
           if (Math.abs(dx) > 2) p.face = dx > 0 ? 1 : -1;
@@ -1659,14 +1734,14 @@ const Garden = {
     // friends greet each other when they meet
     if (motion) for (let i = 0; i < pets.length; i++) for (let j = i + 1; j < pets.length; j++) {
       const a = pets[i], b = pets[j]; const d = Math.hypot(a.x - b.x, (a.y - b.y) * 1.6); const u = this.unit((a.y + b.y) / 2);
-      if (d < u * .85) { const push = (u * .85 - d) * .5 * Math.min(1, dt * 6); const nx = (a.x - b.x) / (d || 1), ny = (a.y - b.y) * 1.6 / (d || 1); a.x += nx * push; b.x -= nx * push; a.y += ny * push * .3; b.y -= ny * push * .3; }
+      if (d < u * 1.05) { const push = (u * 1.05 - d) * .5 * Math.min(1, dt * 6); const nx = (a.x - b.x) / (d || 1), ny = (a.y - b.y) * 1.6 / (d || 1); a.x += nx * push; b.x -= nx * push; a.y += ny * push * .3; b.y -= ny * push * .3; }
       if (d < u * 1.05 && a.greetCd <= 0 && b.greetCd <= 0 && ['idle', 'walk'].includes(a.state) && ['idle', 'walk'].includes(b.state)) {
         a.greetCd = b.greetCd = 14 + Math.random() * 8; a.face = b.x > a.x ? 1 : -1; b.face = -a.face;
         for (const p of [a, b]) { this.setState(p, 'happy', .9); p.hopPh = 0; p.expr = 'happy'; }
         this.fx.push({ k: 'heart', x: (a.x + b.x) / 2, y: Math.min(a.y, b.y) - u * .7, vx: 0, vy: -35, life: 0, max: 1.2, s: 7 }); Audio.pop();
       }
     }
-    for (const p of pets) { p.x = clamp(p.x, -60, this.w + 60); if (p.state === 'idle' || p.state === 'nap' || p.state === 'sniff') { p.x = clamp(p.x, this.left(), this.right()); p.y = clamp(p.y, this.top(), this.bottom()); } }
+    for (const p of pets) { if (p.state !== 'walk' && p.state !== 'goEat' && this.nearBasket(p.x, p.y)) { p.x -= 40 * dt; } p.x = clamp(p.x, -60, this.w + 60); if (p.state === 'idle' || p.state === 'nap' || p.state === 'sniff') { p.x = clamp(p.x, this.left(), this.right()); p.y = clamp(p.y, this.top(), this.bottom()); } }
     for (let i = this.fx.length - 1; i >= 0; i--) { const f = this.fx[i]; f.life += dt; if (f.life > f.max) { this.fx.splice(i, 1); continue; } f.x += f.vx * dt; f.y += f.vy * dt; f.vx *= 1 - dt * 1.5; if (f.k === 'crumb') f.vy += 200 * dt; }
     if (this.toastIn) { UI.toast(`${CHARS[this.toastIn].name} moved into the garden!`); this.toastIn = null; }
   },
@@ -1684,9 +1759,12 @@ const Garden = {
       ctx.restore();
     }
     // readable name labels, drawn after everyone so they are never hidden
+    const placed = [];
     for (const p of order) {
       const u = this.unit(p.y); const name = CHARS[p.type].name; const fs = clamp(u * .2, 12, 15);
-      ctx.font = `800 ${fs}px ${font}`; const tw = ctx.measureText(name).width; const bw = tw + 16, bh = fs + 9, bx = p.x - bw / 2, by = p.y + u * .1;
+      ctx.font = `800 ${fs}px ${font}`; const tw = ctx.measureText(name).width; const bw = tw + 16, bh = fs + 9; let bx = p.x - bw / 2, by = p.y + u * .1;
+      for (let tries = 0; tries < 4; tries++) { const hit = placed.find(r => bx < r[0] + r[2] && bx + bw > r[0] && by < r[1] + r[3] && by + bh > r[1]); if (!hit) break; by = hit[1] + hit[3] + 2; }
+      placed.push([bx, by, bw, bh]);
       ctx.fillStyle = 'rgba(251,244,230,.94)'; roundRectPath(ctx, bx, by, bw, bh, bh / 2); ctx.fill(); ctx.strokeStyle = CHARS[p.type].path; ctx.lineWidth = 1.6; ctx.stroke();
       ctx.fillStyle = '#4a3328'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(name, p.x, by + bh / 2 + .5);
       if (p.meterT <= 0 && ['idle', 'sniff', 'walk'].includes(p.state) && Save.happy(p.type) < 35 && Math.sin(t * .9 + p.phase) > .2) { const bx = p.x + u * .32 * p.face, by = p.y - u * 1.0 + p.hopY; ctx.save(); ctx.fillStyle = 'rgba(251,244,230,.95)'; ctx.strokeStyle = 'rgba(94,67,52,.35)'; ctx.lineWidth = 1.2; circle(ctx, bx, by, 13); ctx.fill(); ctx.stroke(); circle(ctx, bx - 9 * p.face, by + 14, 3.5); ctx.fill(); ctx.stroke(); drawAcorn(ctx, bx, by - 1, 12); ctx.restore(); }
@@ -1707,6 +1785,349 @@ const Garden = {
   }
 };
 
+// @@NIBBLE-RULES
+// Nibble puzzles: a cake on a W x H grid. 'keep' cells carry icing and must stay;
+// every other cell must be nibbled. Animals sit outside the cake on a side + lane.
+// When tapped, an animal walks in along its lane to the first cake cell, then eats
+// its bite shape there, oriented the way it is walking. Each animal eats once.
+// A bite is refused if it would touch icing or would eat nothing.
+const BITES = {
+  mouse:    [[0, 0]],
+  bunny:    [[0, 0], [1, 0], [2, 0]],
+  duckling: [[0, -1], [0, 0], [0, 1]],
+  hedgehog: [[0, 0], [1, 0], [0, 1], [1, 1]],
+  squirrel: [[0, 0], [1, 0], [1, 1]],
+  frog:     [[0, 0], [2, 0]],
+  kitten:   [[0, 0], [1, 0], [1, 1], [2, 1]],
+  fox:      [[0, 0], [1, 0], [2, 0], [1, -1], [1, 1]],
+  bear:     [[0, -1], [0, 0], [0, 1], [1, -1], [1, 0], [1, 1]],
+};
+const SIDES = { top: [0, 1], bottom: [0, -1], left: [1, 0], right: [-1, 0] };
+function laneStart(side, lane, w, h) { return side === 'top' ? [lane, 0] : side === 'bottom' ? [lane, h - 1] : side === 'left' ? [0, lane] : [w - 1, lane]; }
+// cake: Uint8Array(w*h), 1 = cake present. keep: Uint8Array(w*h), 1 = icing.
+function biteCells(an, cake, w, h) {
+  const f = SIDES[an.side]; const l = [-f[1], f[0]]; let [x, y] = laneStart(an.side, an.lane, w, h); let steps = 0;
+  while (x >= 0 && y >= 0 && x < w && y < h && !cake[y * w + x]) { x += f[0]; y += f[1]; steps++; }
+  if (x < 0 || y < 0 || x >= w || y >= h) return { anchor: null, cells: [], steps };
+  const cells = [];
+  for (const [a, b] of BITES[an.type]) { const cx = x + a * f[0] + b * l[0], cy = y + a * f[1] + b * l[1]; if (cx < 0 || cy < 0 || cx >= w || cy >= h) continue; if (cake[cy * w + cx]) cells.push([cx, cy]); }
+  return { anchor: [x, y], cells, steps };
+}
+function tryBite(an, cake, keep, w, h) {
+  const r = biteCells(an, cake, w, h);
+  if (!r.anchor) return { ok: false, why: 'empty', ...r };
+  const spoil = r.cells.filter(([x, y]) => keep[y * w + x]);
+  if (spoil.length) return { ok: false, why: 'icing', spoil, ...r };
+  if (!r.cells.length) return { ok: false, why: 'empty', ...r };
+  return { ok: true, ...r };
+}
+function cakeDone(cake, keep) { for (let i = 0; i < cake.length; i++) if (cake[i] !== keep[i]) return false; return true; }
+// Depth-first search for a winning order from the current state (used for hints).
+function solveNibble(animals, used, cake, keep, w, h, limit = 200000) {
+  const seen = new Set(); let nodes = 0;
+  function key(u, c) { return u.join('') + '|' + c.join(''); }
+  function dfs(u, c) {
+    if (cakeDone(c, keep)) return [];
+    if (++nodes > limit) return null; const k = key(u, c); if (seen.has(k)) return null; seen.add(k);
+    for (let i = 0; i < animals.length; i++) { if (u[i]) continue; const r = tryBite(animals[i], c, keep, w, h); if (!r.ok) continue;
+      const c2 = c.slice(); r.cells.forEach(([x, y]) => { c2[y * w + x] = 0; }); const u2 = u.slice(); u2[i] = 1; const rest = dfs(u2, c2); if (rest) return [i, ...rest]; }
+    return null;
+  }
+  return dfs(used.slice(), cake.slice());
+}
+// @@NIBBLE-RULES-END
+const NLEVELS = [{"name":"First Nibble","w":3,"h":2,"rows":["...","###"],"animals":[{"type":"bunny","side":"left","lane":0}],"sol":[0]},{"name":"Little Bar","w":3,"h":3,"rows":["...","###","..."],"animals":[{"type":"bunny","side":"left","lane":0},{"type":"bunny","side":"right","lane":2}],"sol":[0,1]},{"name":"Tiny Tower","w":4,"h":4,"rows":["....",".##.",".##.","...."],"animals":[{"type":"duckling","side":"left","lane":2},{"type":"duckling","side":"bottom","lane":2},{"type":"duckling","side":"top","lane":1},{"type":"duckling","side":"right","lane":1}],"sol":[2,1,0,3]},{"name":"Step Stool","w":4,"h":4,"rows":["#...","##..","###.","####"],"animals":[{"type":"duckling","side":"right","lane":1},{"type":"bunny","side":"left","lane":0},{"type":"mouse","side":"top","lane":1},{"type":"duckling","side":"right","lane":0}],"sol":[0,3,2]},{"name":"Bridge","w":5,"h":4,"rows":[".....","#####","#...#","....."],"animals":[{"type":"bunny","side":"left","lane":0},{"type":"duckling","side":"bottom","lane":1},{"type":"duckling","side":"bottom","lane":2},{"type":"duckling","side":"top","lane":3},{"type":"bunny","side":"right","lane":2},{"type":"bunny","side":"right","lane":3}],"sol":[3,5,1,0,2]},{"name":"Little Cup","w":5,"h":5,"rows":[".....","#...#","#####",".###.","....."],"animals":[{"type":"duckling","side":"left","lane":4},{"type":"duckling","side":"bottom","lane":2},{"type":"duckling","side":"top","lane":3},{"type":"hedgehog","side":"right","lane":1},{"type":"duckling","side":"top","lane":2},{"type":"duckling","side":"right","lane":4},{"type":"bunny","side":"left","lane":0}],"sol":[2,4,6,0,1,5]},{"name":"Arrow","w":5,"h":5,"rows":["..#..",".###.","#####","..#..","..#.."],"animals":[{"type":"duckling","side":"right","lane":0},{"type":"bunny","side":"right","lane":2},{"type":"mouse","side":"top","lane":3},{"type":"hedgehog","side":"bottom","lane":0},{"type":"hedgehog","side":"top","lane":0},{"type":"hedgehog","side":"bottom","lane":3},{"type":"mouse","side":"left","lane":0}],"sol":[5,3,0,4,6,2]},{"name":"Heart","w":5,"h":5,"rows":[".#.#.","#####","#####",".###.","..#.."],"animals":[{"type":"mouse","side":"left","lane":0},{"type":"mouse","side":"bottom","lane":0},{"type":"hedgehog","side":"left","lane":4},{"type":"hedgehog","side":"bottom","lane":4},{"type":"mouse","side":"bottom","lane":3},{"type":"mouse","side":"top","lane":2},{"type":"bunny","side":"left","lane":1},{"type":"duckling","side":"bottom","lane":1},{"type":"mouse","side":"right","lane":0}],"sol":[3,2,1,0,4,8,5]},{"name":"Diamond","w":5,"h":5,"rows":["..#..",".###.","#####",".###.","..#.."],"animals":[{"type":"mouse","side":"left","lane":3},{"type":"squirrel","side":"right","lane":0},{"type":"duckling","side":"bottom","lane":0},{"type":"squirrel","side":"bottom","lane":4},{"type":"mouse","side":"right","lane":1},{"type":"mouse","side":"right","lane":4},{"type":"duckling","side":"left","lane":0},{"type":"mouse","side":"top","lane":1},{"type":"bunny","side":"top","lane":2}],"sol":[3,1,2,6,4,5,0,7]},{"name":"Mushroom","w":6,"h":6,"rows":["......",".####.","######","..##..","..##..","......"],"animals":[{"type":"squirrel","side":"left","lane":3},{"type":"hedgehog","side":"top","lane":3},{"type":"bunny","side":"right","lane":0},{"type":"bunny","side":"left","lane":5},{"type":"squirrel","side":"top","lane":0},{"type":"hedgehog","side":"top","lane":4},{"type":"bunny","side":"left","lane":0},{"type":"hedgehog","side":"left","lane":4},{"type":"bunny","side":"right","lane":5},{"type":"hedgehog","side":"right","lane":4},{"type":"mouse","side":"right","lane":1}],"sol":[0,7,9,2,8,3,4,6,10]},{"name":"Little House","w":6,"h":6,"rows":["..##..",".####.","######",".####.",".#..#.","......"],"animals":[{"type":"duckling","side":"left","lane":4},{"type":"duckling","side":"right","lane":4},{"type":"mouse","side":"top","lane":1},{"type":"duckling","side":"bottom","lane":3},{"type":"squirrel","side":"top","lane":3},{"type":"duckling","side":"left","lane":0},{"type":"squirrel","side":"left","lane":5},{"type":"duckling","side":"left","lane":1},{"type":"frog","side":"top","lane":5},{"type":"squirrel","side":"bottom","lane":2},{"type":"squirrel","side":"right","lane":0}],"sol":[0,9,1,10,3,5,6,8,2]},{"name":"Bunny Ears","w":6,"h":6,"rows":[".#..#.",".#..#.",".####.","######",".####.","......"],"animals":[{"type":"frog","side":"bottom","lane":2},{"type":"hedgehog","side":"bottom","lane":5},{"type":"bunny","side":"top","lane":5},{"type":"bunny","side":"top","lane":0},{"type":"bunny","side":"left","lane":5},{"type":"bunny","side":"right","lane":5},{"type":"frog","side":"bottom","lane":0},{"type":"hedgehog","side":"left","lane":1},{"type":"hedgehog","side":"top","lane":3}],"sol":[1,2,8,3,5,4,6]},{"name":"Teacup","w":6,"h":6,"rows":["......","#####.","######","#####.",".###..","......"],"animals":[{"type":"duckling","side":"right","lane":0},{"type":"duckling","side":"top","lane":3},{"type":"hedgehog","side":"right","lane":2},{"type":"duckling","side":"right","lane":1},{"type":"duckling","side":"bottom","lane":3},{"type":"duckling","side":"top","lane":1},{"type":"hedgehog","side":"bottom","lane":5},{"type":"squirrel","side":"right","lane":5},{"type":"mouse","side":"right","lane":4},{"type":"mouse","side":"right","lane":3}],"sol":[0,5,4,6,7,1,8,9]},{"name":"Crown","w":6,"h":6,"rows":["#.##.#","######","######",".####.","......","......"],"animals":[{"type":"squirrel","side":"bottom","lane":1},{"type":"mouse","side":"top","lane":4},{"type":"squirrel","side":"left","lane":2},{"type":"mouse","side":"right","lane":3},{"type":"bunny","side":"right","lane":4},{"type":"hedgehog","side":"left","lane":1},{"type":"mouse","side":"top","lane":1},{"type":"bunny","side":"left","lane":5},{"type":"bunny","side":"bottom","lane":0},{"type":"kitten","side":"right","lane":5}],"sol":[4,0,8,9,7,1,3,6]},{"name":"Fish","w":6,"h":6,"rows":["......",".##..#","#####.","######",".##..#","......"],"animals":[{"type":"duckling","side":"bottom","lane":2},{"type":"squirrel","side":"right","lane":4},{"type":"duckling","side":"left","lane":5},{"type":"duckling","side":"top","lane":1},{"type":"mouse","side":"top","lane":0},{"type":"squirrel","side":"top","lane":4},{"type":"frog","side":"right","lane":0},{"type":"squirrel","side":"top","lane":3},{"type":"mouse","side":"bottom","lane":3},{"type":"squirrel","side":"right","lane":5},{"type":"mouse","side":"right","lane":2}],"sol":[9,0,6,3,5,2,4,10,8]},{"name":"Sailboat","w":6,"h":6,"rows":["...#..","..##..",".###..","..#...","######",".####."],"animals":[{"type":"frog","side":"bottom","lane":5},{"type":"kitten","side":"right","lane":1},{"type":"kitten","side":"right","lane":4},{"type":"kitten","side":"top","lane":1},{"type":"frog","side":"left","lane":3},{"type":"hedgehog","side":"top","lane":5},{"type":"frog","side":"bottom","lane":0},{"type":"hedgehog","side":"right","lane":3},{"type":"bunny","side":"left","lane":1},{"type":"bunny","side":"left","lane":0}],"sol":[7,5,3,9,6,4,0]},{"name":"Star","w":7,"h":7,"rows":["...#...","..###..","#######",".#####.",".##.##.",".#...#.","......."],"animals":[{"type":"fox","side":"left","lane":6},{"type":"fox","side":"left","lane":0},{"type":"fox","side":"bottom","lane":3},{"type":"mouse","side":"top","lane":0},{"type":"squirrel","side":"right","lane":1},{"type":"bunny","side":"right","lane":0},{"type":"bunny","side":"bottom","lane":6},{"type":"bunny","side":"right","lane":4},{"type":"bunny","side":"right","lane":6},{"type":"bunny","side":"bottom","lane":0},{"type":"mouse","side":"left","lane":3},{"type":"bunny","side":"bottom","lane":1}],"sol":[8,1,2,5,9,4,0,6,3,10]},{"name":"Pine Tree","w":7,"h":7,"rows":["...#...","..###..",".#####.","..###..",".#####.","#######","...#..."],"animals":[{"type":"kitten","side":"right","lane":1},{"type":"frog","side":"top","lane":0},{"type":"kitten","side":"bottom","lane":0},{"type":"bunny","side":"left","lane":0},{"type":"duckling","side":"left","lane":2},{"type":"frog","side":"bottom","lane":6},{"type":"fox","side":"right","lane":0},{"type":"frog","side":"top","lane":1},{"type":"fox","side":"top","lane":6},{"type":"duckling","side":"bottom","lane":5},{"type":"duckling","side":"right","lane":5},{"type":"bunny","side":"left","lane":6}],"sol":[4,3,5,6,11,9,0,7,8,1]},{"name":"Cat Face","w":7,"h":7,"rows":["#.....#","##...##","#######","#######","#######",".#####.","......."],"animals":[{"type":"bear","side":"left","lane":0},{"type":"hedgehog","side":"top","lane":3},{"type":"frog","side":"right","lane":6},{"type":"squirrel","side":"left","lane":6},{"type":"squirrel","side":"bottom","lane":6},{"type":"mouse","side":"bottom","lane":4},{"type":"frog","side":"left","lane":3},{"type":"fox","side":"left","lane":5},{"type":"mouse","side":"bottom","lane":0},{"type":"hedgehog","side":"top","lane":4},{"type":"mouse","side":"top","lane":1},{"type":"mouse","side":"top","lane":5},{"type":"mouse","side":"bottom","lane":2}],"sol":[1,4,3,9,2,8,5,10,11,12]},{"name":"Tulip","w":7,"h":7,"rows":[".#...#.","##...##",".#####.","..###..","...#...","..###..","......."],"animals":[{"type":"mouse","side":"bottom","lane":0},{"type":"fox","side":"right","lane":4},{"type":"bear","side":"right","lane":6},{"type":"duckling","side":"top","lane":6},{"type":"duckling","side":"bottom","lane":2},{"type":"bear","side":"left","lane":1},{"type":"mouse","side":"top","lane":1},{"type":"fox","side":"left","lane":6},{"type":"bear","side":"top","lane":3},{"type":"mouse","side":"right","lane":0},{"type":"duckling","side":"right","lane":3},{"type":"kitten","side":"left","lane":3},{"type":"mouse","side":"top","lane":0},{"type":"bear","side":"left","lane":5}],"sol":[11,13,8,2,1,4,7,0,10,12,9]},{"name":"Moon","w":7,"h":7,"rows":["..###..",".##....","##.....","##.....","##.....",".##....","..###.."],"animals":[{"type":"mouse","side":"left","lane":1},{"type":"bear","side":"right","lane":4},{"type":"duckling","side":"top","lane":0},{"type":"squirrel","side":"top","lane":2},{"type":"squirrel","side":"left","lane":0},{"type":"bear","side":"right","lane":2},{"type":"duckling","side":"left","lane":6},{"type":"mouse","side":"bottom","lane":1},{"type":"bear","side":"right","lane":1},{"type":"bear","side":"right","lane":5},{"type":"duckling","side":"bottom","lane":2},{"type":"duckling","side":"bottom","lane":5},{"type":"duckling","side":"right","lane":3}],"sol":[8,9,11,2,1,5,6,12,7,0]},{"name":"Key","w":7,"h":7,"rows":[".......",".###...","#####..","#######","#####.#",".###...","......."],"animals":[{"type":"kitten","side":"right","lane":2},{"type":"bear","side":"left","lane":2},{"type":"fox","side":"right","lane":5},{"type":"hedgehog","side":"top","lane":0},{"type":"mouse","side":"bottom","lane":0},{"type":"bear","side":"top","lane":6},{"type":"mouse","side":"bottom","lane":3},{"type":"hedgehog","side":"left","lane":6},{"type":"fox","side":"right","lane":6},{"type":"kitten","side":"right","lane":0},{"type":"mouse","side":"left","lane":0},{"type":"mouse","side":"top","lane":1},{"type":"kitten","side":"top","lane":3},{"type":"bear","side":"bottom","lane":4},{"type":"mouse","side":"bottom","lane":2}],"sol":[5,8,7,2,0,9,3,11,6,10,4,14]},{"name":"Mushroom Hollow","w":7,"h":7,"rows":["..###..",".#####.","#######","..###..","..###..",".#####.","......."],"animals":[{"type":"kitten","side":"top","lane":0},{"type":"kitten","side":"bottom","lane":0},{"type":"squirrel","side":"right","lane":0},{"type":"bunny","side":"bottom","lane":6},{"type":"mouse","side":"right","lane":3},{"type":"mouse","side":"top","lane":1},{"type":"bear","side":"right","lane":5},{"type":"bunny","side":"left","lane":6},{"type":"squirrel","side":"left","lane":3},{"type":"frog","side":"top","lane":5},{"type":"mouse","side":"right","lane":4},{"type":"frog","side":"top","lane":6},{"type":"bunny","side":"right","lane":6},{"type":"squirrel","side":"bottom","lane":1}],"sol":[3,7,1,2,11,12,0,8,10,5,4]},{"name":"Grand Cake","w":7,"h":7,"rows":["#.#.#.#","#######",".#####.",".#####.","#######","#.....#","#.....#"],"animals":[{"type":"mouse","side":"right","lane":3},{"type":"duckling","side":"bottom","lane":3},{"type":"mouse","side":"bottom","lane":5},{"type":"duckling","side":"bottom","lane":4},{"type":"mouse","side":"bottom","lane":6},{"type":"mouse","side":"top","lane":5},{"type":"mouse","side":"top","lane":3},{"type":"mouse","side":"right","lane":2},{"type":"mouse","side":"left","lane":2},{"type":"bunny","side":"right","lane":4},{"type":"frog","side":"top","lane":6},{"type":"mouse","side":"left","lane":3},{"type":"squirrel","side":"bottom","lane":1},{"type":"mouse","side":"top","lane":1}],"sol":[1,12,7,3,13,2,8,0,11,5,6]}];
+// ---------------------------------------------------------------- animals
+// The nibble-mode cast. Each animal's bite shape is part of its personality.
+const ANIMALS = {
+  mouse:    { name: 'Mouse',    body: '#ece1e6', shade: '#d6c4cd', line: '#6e5560', cheek: '#f3a7b5', accent: '#f6c3cf', path: '#c9a3b4', expr: 'curious',  bite: 'one crumb' },
+  bunny:    { name: 'Bunny',    body: '#fdf8f1', shade: '#eadfd0', line: '#7a5541', cheek: '#f4a7b2', accent: '#f6c3cf', path: '#e8a7b7', expr: 'happy',    bite: 'three in a row' },
+  duckling: { name: 'Duckling', body: '#fae590', shade: '#f0cd62', line: '#7a5f30', cheek: '#f6a68f', accent: '#f0a25a', path: '#e9c24f', expr: 'excited',  bite: 'three side by side' },
+  hedgehog: { name: 'Hedgehog', body: '#f5e5cc', shade: '#e6cba6', line: '#6e5240', cheek: '#f0a39b', accent: '#9c7458', path: '#b08562', expr: 'sleepy',   bite: 'a little square' },
+  squirrel: { name: 'Squirrel', body: '#e9a86e', shade: '#d58f55', line: '#704630', cheek: '#f29b8c', accent: '#f6dcbc', path: '#dc8f52', expr: 'curious',  bite: 'an L shape' },
+  frog:     { name: 'Frog',     body: '#aed48f', shade: '#91bd72', line: '#4f6a3e', cheek: '#f0a3a3', accent: '#e7f2c9', path: '#86b86a', expr: 'happy',    bite: 'two with a hop between' },
+  kitten:   { name: 'Kitten',   body: '#f4d3b5', shade: '#e6b893', line: '#6e4e3a', cheek: '#f3a0a0', accent: '#f7c0c4', path: '#e3a77c', expr: 'curious',  bite: 'a zigzag' },
+  fox:      { name: 'Fox',      body: '#ef9d62', shade: '#de8448', line: '#6b3f28', cheek: '#f6a090', accent: '#fff6ea', path: '#e4874a', expr: 'happy',    bite: 'a plus' },
+  bear:     { name: 'Bear',     body: '#c09474', shade: '#a77b5c', line: '#5a3f2e', cheek: '#f0a09a', accent: '#efd9bf', path: '#a77b5c', expr: 'sleepy',   bite: 'a big block' },
+};
+const ANIMAL_ORDER = ['mouse', 'bunny', 'duckling', 'hedgehog', 'squirrel', 'frog', 'kitten', 'fox', 'bear'];
+// garden + shared helpers treat animals like any other friend
+for (const k of ANIMAL_ORDER) CHARS[k] = Object.assign({ motif: 'paw', homeName: 'cake', celebrate: 'bounce' }, ANIMALS[k]);
+const ALL_ORDER = CHAR_ORDER.concat(ANIMAL_ORDER);
+function drawAnimal(ctx, type, x, y, u, a = {}) {
+  const C = ANIMALS[type]; const t = a.t || 0; const ph = a.phase || 0;
+  const breath = a.still ? 0 : Math.sin(t * 2.4 + ph) * .02;
+  const wig = a.still ? 0 : Math.sin(t * 5 + ph) * .06 * (Math.sin(t * .7 + ph) > .55 ? 1 : 0);
+  ctx.save(); ctx.translate(x, y + u * .42 + (a.hopY || 0)); ctx.scale((a.sx || 1) * (1 - breath * .6), (a.sy || 1) * (1 + breath)); if (a.rot) ctx.rotate(a.rot); ctx.translate(0, -u * .42);
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round'; const lw = Math.max(1, u * .028);
+  const whiskers = (y0, len) => { ctx.strokeStyle = rgba(C.line, .45); ctx.lineWidth = Math.max(1, u * .015); for (const s of [-1, 1]) for (const k of [-1, 1]) { ctx.beginPath(); ctx.moveTo(s * u * .14, y0 + k * u * .02); ctx.lineTo(s * (u * .14 + len), y0 + k * u * .05); ctx.stroke(); } };
+  const nose = (y0, col = '#e98a9a', r = .035) => { ctx.fillStyle = col; ellipse(ctx, 0, y0, u * r * 1.3, u * r); ctx.fill(); };
+  if (type === 'mouse') {
+    ctx.strokeStyle = C.shade; ctx.lineWidth = Math.max(1.5, u * .04); ctx.beginPath(); ctx.moveTo(u * .25, u * .3); ctx.bezierCurveTo(u * .55, u * .35, u * .55, u * .05, u * .42, -u * .02); ctx.stroke();
+    for (const s of [-1, 1]) { ctx.save(); ctx.translate(s * u * .25, -u * .26); ctx.rotate(s * (.2 + wig)); circle(ctx, 0, 0, u * .17); ctx.fillStyle = C.body; ctx.fill(); outline(ctx, C, lw); circle(ctx, 0, 0, u * .1); ctx.fillStyle = C.accent; ctx.fill(); ctx.restore(); }
+    feet(ctx, C, u, u * .14, u * .37, u * .08); bodyBlob(ctx, C, 0, u * .04, u * .33, u * .32, 101, u);
+    drawFace(ctx, u, C, a, { ey: 0, ex: u * .12, er: u * .05 }); nose(u * .08); whiskers(u * .09, u * .14);
+  } else if (type === 'bunny') {
+    for (const s of [-1, 1]) { ctx.save(); ctx.translate(s * u * .12, -u * .25); ctx.rotate(s * (.16 + wig)); ellipse(ctx, 0, -u * .2, u * .09, u * .24); ctx.fillStyle = C.body; ctx.fill(); outline(ctx, C, lw); ellipse(ctx, 0, -u * .18, u * .045, u * .16); ctx.fillStyle = C.accent; ctx.fill(); ctx.restore(); }
+    feet(ctx, C, u, u * .15, u * .37, u * .09); bodyBlob(ctx, C, 0, u * .04, u * .35, u * .33, 102, u);
+    drawFace(ctx, u, C, a, { ey: 0, ex: u * .13 }); nose(u * .1, '#f19aa8', .03);
+  } else if (type === 'duckling') {
+    for (const s of [-1, 1]) { ctx.save(); ctx.translate(s * u * .33, u * .08); ctx.rotate(s * (.5 + wig)); ellipse(ctx, 0, 0, u * .09, u * .14); ctx.fillStyle = C.shade; ctx.fill(); outline(ctx, C, 1); ctx.restore(); }
+    ctx.fillStyle = C.accent; for (const s of [-1, 1]) { ellipse(ctx, s * u * .12, u * .39, u * .1, u * .05); ctx.fill(); }
+    bodyBlob(ctx, C, 0, u * .03, u * .35, u * .35, 103, u);
+    ctx.strokeStyle = C.shade; ctx.lineWidth = Math.max(1.5, u * .035); for (const dx of [-.04, 0, .04]) { ctx.beginPath(); ctx.moveTo(dx * u, -u * .3); ctx.quadraticCurveTo(dx * u * 2, -u * .42, dx * u * 3 + u * .02, -u * .45); ctx.stroke(); }
+    drawFace(ctx, u, C, a, { ey: -u * .04, ex: u * .14 });
+    ctx.fillStyle = C.accent; ellipse(ctx, 0, u * .1, u * .12, u * .06); ctx.fill(); ctx.strokeStyle = rgba('#a0622a', .6); ctx.lineWidth = 1; ctx.stroke(); ctx.beginPath(); ctx.moveTo(-u * .1, u * .1); ctx.lineTo(u * .1, u * .1); ctx.stroke();
+  } else if (type === 'hedgehog') {
+    ctx.fillStyle = C.accent; ctx.beginPath(); const n = 11; for (let i = 0; i <= n; i++) { const an = Math.PI * (1.05 + i / n * .9); const r = i % 2 ? u * .5 : u * .36; ctx.lineTo(Math.cos(an) * r * 1.05, u * .06 + Math.sin(an) * r); } ctx.closePath(); ctx.fill(); ctx.strokeStyle = rgba(C.line, .55); ctx.lineWidth = lw; ctx.stroke();
+    ctx.fillStyle = C.accent; ellipse(ctx, 0, u * .02, u * .42, u * .3); ctx.fill();
+    feet(ctx, C, u, u * .16, u * .37, u * .085); bodyBlob(ctx, C, 0, u * .1, u * .3, u * .27, 104, u);
+    drawFace(ctx, u, C, a, { ey: u * .06, ex: u * .12, er: u * .048 }); nose(u * .15, '#4a3328', .035);
+  } else if (type === 'squirrel') {
+    ctx.save(); ctx.rotate(wig * .5); ctx.fillStyle = C.shade; ctx.beginPath(); ctx.moveTo(u * .2, u * .3); ctx.bezierCurveTo(u * .75, u * .3, u * .75, -u * .45, u * .38, -u * .45); ctx.bezierCurveTo(u * .15, -u * .45, u * .2, -u * .2, u * .38, -u * .2); ctx.bezierCurveTo(u * .5, -u * .2, u * .45, u * .1, u * .2, u * .1); ctx.closePath(); ctx.fill(); outline(ctx, C, lw); ctx.fillStyle = rgba(C.accent, .6); ellipse(ctx, u * .45, -u * .32, u * .07, u * .05, .4); ctx.fill(); ctx.restore();
+    for (const s of [-1, 1]) { ctx.save(); ctx.translate(s * u * .2, -u * .27); ctx.rotate(s * (.3 + wig)); ctx.beginPath(); ctx.moveTo(-u * .07, u * .04); ctx.lineTo(0, -u * .14); ctx.lineTo(u * .07, u * .04); ctx.closePath(); ctx.fillStyle = C.body; ctx.fill(); outline(ctx, C, 1); ctx.restore(); }
+    feet(ctx, C, u, u * .14, u * .37, u * .085); bodyBlob(ctx, C, 0, u * .04, u * .33, u * .33, 105, u);
+    ctx.fillStyle = C.accent; ellipse(ctx, 0, u * .2, u * .17, u * .13); ctx.fill();
+    drawFace(ctx, u, C, a, { ey: -u * .02, ex: u * .13 }); nose(u * .07, '#7a4a30', .028);
+  } else if (type === 'frog') {
+    feet(ctx, C, u, u * .2, u * .37, u * .1);
+    for (const s of [-1, 1]) { circle(ctx, s * u * .17, -u * .2, u * .13); ctx.fillStyle = C.body; ctx.fill(); outline(ctx, C, lw); }
+    bodyBlob(ctx, C, 0, u * .08, u * .42, u * .3, 106, u);
+    ctx.fillStyle = C.accent; ellipse(ctx, 0, u * .24, u * .22, u * .1); ctx.fill();
+    for (const s of [-1, 1]) { circle(ctx, s * u * .17, -u * .2, u * .1); ctx.fillStyle = '#fbf8ee'; ctx.fill(); }
+    drawFace(ctx, u, C, a, { ey: -u * .2, ex: u * .17, er: u * .06 });
+  } else if (type === 'kitten') {
+    ctx.strokeStyle = C.shade; ctx.lineWidth = Math.max(2, u * .06); ctx.beginPath(); ctx.moveTo(u * .25, u * .32); ctx.quadraticCurveTo(u * .55, u * .3, u * .48, u * (.02 + Math.sin(t * 3 + ph) * (a.still ? 0 : .04))); ctx.stroke();
+    for (const s of [-1, 1]) { ctx.save(); ctx.translate(s * u * .2, -u * .24); ctx.rotate(s * (.25 + wig)); ctx.beginPath(); ctx.moveTo(-u * .1, u * .06); ctx.lineTo(0, -u * .16); ctx.lineTo(u * .1, u * .06); ctx.closePath(); ctx.fillStyle = C.body; ctx.fill(); outline(ctx, C, 1); ctx.beginPath(); ctx.moveTo(-u * .05, u * .03); ctx.lineTo(0, -u * .08); ctx.lineTo(u * .05, u * .03); ctx.closePath(); ctx.fillStyle = C.accent; ctx.fill(); ctx.restore(); }
+    feet(ctx, C, u, u * .14, u * .37, u * .085); bodyBlob(ctx, C, 0, u * .04, u * .35, u * .33, 107, u);
+    ctx.strokeStyle = rgba(C.shade, .9); ctx.lineWidth = Math.max(1.5, u * .03); for (const dx of [-.06, 0, .06]) { ctx.beginPath(); ctx.moveTo(dx * u, -u * .27); ctx.lineTo(dx * u, -u * .19); ctx.stroke(); }
+    drawFace(ctx, u, C, a, { ey: 0, ex: u * .13 }); nose(u * .08, '#ef8f9e', .026); whiskers(u * .1, u * .16);
+  } else if (type === 'fox') {
+    ctx.save(); ctx.rotate(wig * .4); ctx.fillStyle = C.body; ctx.beginPath(); ctx.moveTo(u * .2, u * .3); ctx.bezierCurveTo(u * .7, u * .35, u * .72, -u * .1, u * .52, -u * .2); ctx.bezierCurveTo(u * .45, u * .05, u * .35, u * .1, u * .22, u * .12); ctx.closePath(); ctx.fill(); outline(ctx, C, lw); ctx.fillStyle = C.accent; ellipse(ctx, u * .55, -u * .14, u * .06, u * .08, .5); ctx.fill(); ctx.restore();
+    for (const s of [-1, 1]) { ctx.save(); ctx.translate(s * u * .2, -u * .25); ctx.rotate(s * (.32 + wig)); ctx.beginPath(); ctx.moveTo(-u * .11, u * .06); ctx.lineTo(0, -u * .2); ctx.lineTo(u * .11, u * .06); ctx.closePath(); ctx.fillStyle = C.body; ctx.fill(); outline(ctx, C, 1); ctx.beginPath(); ctx.moveTo(-u * .045, -u * .08); ctx.lineTo(0, -u * .2); ctx.lineTo(u * .045, -u * .08); ctx.closePath(); ctx.fillStyle = '#6b3f28'; ctx.fill(); ctx.restore(); }
+    feet(ctx, C, u, u * .14, u * .37, u * .085); bodyBlob(ctx, C, 0, u * .04, u * .35, u * .33, 108, u);
+    ctx.fillStyle = C.accent; ctx.beginPath(); ctx.moveTo(-u * .3, u * .02); ctx.quadraticCurveTo(0, u * .42, u * .3, u * .02); ctx.quadraticCurveTo(0, u * .14, -u * .3, u * .02); ctx.fill();
+    drawFace(ctx, u, C, a, { ey: -u * .04, ex: u * .13 }); nose(u * .08, '#4a3328', .03);
+  } else if (type === 'bear') {
+    for (const s of [-1, 1]) { circle(ctx, s * u * .25, -u * .25, u * .12); ctx.fillStyle = C.body; ctx.fill(); outline(ctx, C, lw); circle(ctx, s * u * .25, -u * .25, u * .065); ctx.fillStyle = C.accent; ctx.fill(); }
+    feet(ctx, C, u, u * .17, u * .38, u * .1); bodyBlob(ctx, C, 0, u * .05, u * .38, u * .35, 109, u);
+    ctx.fillStyle = C.accent; ellipse(ctx, 0, u * .12, u * .15, u * .11); ctx.fill();
+    drawFace(ctx, u, C, a, { ey: -u * .04, ex: u * .14 }); nose(u * .07, '#4a3328', .04);
+  }
+  ctx.restore();
+}
+// a little wooden badge showing an animal's bite, in board orientation
+function drawBiteIcon(ctx, type, side, x, y, size, color, dim = false) {
+  const f = SIDES[side], l = [-f[1], f[0]]; const cells = BITES[type].map(([a, b]) => [a * f[0] + b * l[0], a * f[1] + b * l[1]]);
+  const xs = cells.map(c => c[0]), ys = cells.map(c => c[1]); const minx = Math.min(...xs), maxx = Math.max(...xs), miny = Math.min(...ys), maxy = Math.max(...ys);
+  const gw = maxx - minx + 1, gh = maxy - miny + 1; const span = Math.max(gw, gh, 2); const m = size * .78 / span;
+  ctx.save(); ctx.globalAlpha = dim ? .35 : 1;
+  ctx.fillStyle = 'rgba(251,244,230,.96)'; roundRectPath(ctx, x - size / 2, y - size / 2, size, size, size * .25); ctx.fill(); ctx.strokeStyle = color; ctx.lineWidth = Math.max(1.5, size * .06); ctx.stroke();
+  const ox = x - gw * m / 2 - minx * m, oy = y - gh * m / 2 - miny * m;
+  for (let gx = minx; gx <= maxx; gx++) for (let gy = miny; gy <= maxy; gy++) { ctx.fillStyle = 'rgba(94,67,52,.08)'; roundRectPath(ctx, ox + gx * m + m * .08, oy + gy * m + m * .08, m * .84, m * .84, m * .2); ctx.fill(); }
+  cells.forEach(([cx, cy], i) => { ctx.fillStyle = color; roundRectPath(ctx, ox + cx * m + m * .08, oy + cy * m + m * .08, m * .84, m * .84, m * .2); ctx.fill(); if (i === 0) { ctx.fillStyle = 'rgba(255,255,255,.85)'; circle(ctx, ox + cx * m + m / 2, oy + cy * m + m / 2, m * .16); ctx.fill(); } });
+  ctx.restore();
+}
+// ---------------------------------------------------------------- nibbles
+// Second game mode: tap animals to nibble the plain cake away, leaving the iced picture.
+const N_AREAS = [
+  { name: 'Carrot Cake Café', theme: 'meadow', icing: '#f4b6c6', levels: [0, 1, 2, 3, 4, 5, 6, 7] },
+  { name: 'Berry Tart Terrace', theme: 'hollow', icing: '#cdb8e6', levels: [8, 9, 10, 11, 12, 13, 14, 15] },
+  { name: 'Cocoa Hollow', theme: 'glade', icing: '#a9765a', levels: [16, 17, 18, 19, 20, 21, 22, 23] },
+];
+const N_HINTS = {
+  0: 'Tap Bunny to nibble the plain cake. Keep the pink icing!',
+  1: 'Each friend nibbles once. Who should go first?',
+  2: 'Hold a friend to peek at what they will nibble.',
+  3: 'Some friends would spoil the icing. Leave them be!',
+  5: 'The little sign shows the shape each friend nibbles.',
+};
+const Nibble = {
+  idx: 0, L: null, cake: null, keep: null, used: [], history: [], wasted: 0, hintsUsed: 0, complete: false, t: 0,
+  anim: null, press: null, peek: -1, hover: -1, hintPick: null, flash: null, shake: {}, particles: [], cv: null, ctx: null, w: 0, h: 0, cs: 40, pad: 20, introQ: [], stuckShown: false, tutorial: false,
+  init() {
+    this.cv = $('#nb-board');
+    this.cv.addEventListener('pointerdown', e => this.down(e), { passive: false });
+    this.cv.addEventListener('pointermove', e => this.move(e), { passive: false });
+    this.cv.addEventListener('pointerup', e => this.up(e));
+    this.cv.addEventListener('pointercancel', () => { this.press = null; this.peek = -1; });
+    this.cv.addEventListener('pointerleave', () => { this.hover = -1; });
+    this.cv.addEventListener('contextmenu', e => e.preventDefault());
+    this.cv.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+  },
+  area(i) { return N_AREAS.find(a => a.levels.includes(i)) || N_AREAS[0]; },
+  start(i) {
+    this.idx = i; const d = NLEVELS[i]; this.L = d; const w = d.w, h = d.h;
+    this.keep = new Uint8Array(w * h); d.rows.forEach((row, y) => [...row].forEach((ch, x) => { this.keep[y * w + x] = ch === '#' ? 1 : 0; }));
+    this.resetState(); Save.data.nLast = i; Save.save();
+    UI.mode = 'nibble'; UI.show('nibble'); Scenery.set(this.area(i).theme); this.resize(); this.updateHud();
+    this.introQ = []; const fresh = [...new Set(d.animals.map(a => a.type))].filter(t => !Save.data.met[t]);
+    fresh.forEach(t => { Save.data.met[t] = true; }); if (fresh.length) Save.save();
+    this.tutorial = i === 0;
+    if (fresh.length) { this.introQ = fresh.slice(); this.nextIntro(); } else if (N_HINTS[i]) this.bubble(N_HINTS[i], 5500);
+  },
+  resetState() {
+    const d = this.L; this.cake = new Uint8Array(d.w * d.h).fill(1); this.used = d.animals.map(() => 0); this.history = []; this.wasted = 0; this.hintsUsed = 0; this.complete = false; this.anim = null; this.peek = -1; this.hintPick = null; this.flash = null; this.particles = []; this.stuckShown = false; this.pending = null;
+    this.actors = d.animals.map((a, i) => ({ i, phase: Math.random() * TAU, blinkAt: Math.random() * 3, blink: 0, sx: 1, sy: 1, hopY: 0, expr: null, px: 0, py: 0, cheerT: 0 }));
+  },
+  nextIntro() {
+    const type = this.introQ.shift(); if (!type) { if (N_HINTS[this.idx]) this.bubble(N_HINTS[this.idx], 5500); return; }
+    const C = ANIMALS[type]; const el = $('#nb-intro'); const cv = $('canvas', el); const ctx = cv.getContext('2d'); ctx.setTransform(2, 0, 0, 2, 0, 0); ctx.clearRect(0, 0, 76, 56);
+    drawAnimal(ctx, type, 22, 26, 38, { still: true, expr: 'happy' }); drawBiteIcon(ctx, type, 'left', 58, 28, 30, C.path);
+    $('.txt', el).innerHTML = `<b>Meet ${C.name}!</b><span>${C.name} nibbles ${C.bite}.</span>`;
+    el.classList.add('show'); clearTimeout(this.introT); this.introT = setTimeout(() => { el.classList.remove('show'); setTimeout(() => this.nextIntro(), 350); }, this.introQ.length ? 3200 : 4200);
+  },
+  bubble(msg, ms = 2600) { const el = $('#nb-hint'); el.textContent = msg; el.classList.add('show'); clearTimeout(this.bubbleT); this.bubbleT = setTimeout(() => el.classList.remove('show'), ms); },
+  resize() {
+    const d = this.L; if (!d) return; const wrap = $('#nb-wrap'); const aw = Math.max(140, wrap.clientWidth - 12), ah = Math.max(140, wrap.clientHeight - 8);
+    // grid plus a ring for the animals plus a margin for their bite signs
+    const cs = Math.floor(clamp(Math.min(aw / (d.w + 2 + 1.3), ah / (d.h + 2 + 1.3)), 26, 92)); this.cs = cs; this.pad = Math.round(cs * .65);
+    this.w = (d.w + 2) * cs + this.pad * 2; this.h = (d.h + 2) * cs + this.pad * 2; this.ctx = fitCanvas(this.cv, this.w, this.h);
+    this.buildPlate();
+  },
+  cell(x, y) { return [this.pad + (x + 1) * this.cs + this.cs / 2, this.pad + (y + 1) * this.cs + this.cs / 2]; },
+  slot(an) { const d = this.L; return an.side === 'top' ? [an.lane, -1] : an.side === 'bottom' ? [an.lane, d.h] : an.side === 'left' ? [-1, an.lane] : [d.w, an.lane]; },
+  badgePos(an) { const [sx, sy] = this.slot(an); const c = this.cell(sx, sy); const f = SIDES[an.side]; return [c[0] - f[0] * this.cs * .72, c[1] - f[1] * this.cs * .72]; },
+  buildPlate() {
+    const d = this.L, cs = this.cs; const [c, ctx] = offscreen(this.w, this.h); this.plate = c;
+    const x0 = this.pad + cs * .55, y0 = this.pad + cs * .55, pw = (d.w + 1) * cs - cs * .1, ph = (d.h + 1) * cs - cs * .1;
+    ctx.save(); ctx.shadowColor = 'rgba(94,67,52,.25)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 6; ctx.fillStyle = '#fbf6ee'; roundRectPath(ctx, x0, y0, pw, ph, cs * .5); ctx.fill(); ctx.restore();
+    ctx.strokeStyle = 'rgba(94,67,52,.22)'; ctx.lineWidth = 1.5; roundRectPath(ctx, x0, y0, pw, ph, cs * .5); ctx.stroke();
+    ctx.strokeStyle = 'rgba(208,138,108,.35)'; ctx.lineWidth = 2; ctx.setLineDash([4, 6]); roundRectPath(ctx, x0 + cs * .14, y0 + cs * .14, pw - cs * .28, ph - cs * .28, cs * .4); ctx.stroke(); ctx.setLineDash([]);
+    Paper.grain(ctx, x0, y0, pw, ph, .12);
+  },
+  // ---- input
+  hit(px, py) { let best = -1, bd = 1e9; this.L.animals.forEach((an, i) => { const [sx, sy] = this.slot(an); const c = this.cell(sx, sy); const b = this.badgePos(an); const dd = Math.min(Math.hypot(px - c[0], py - c[1]), Math.hypot(px - b[0], py - b[1]) * 1.2); if (dd < bd) { bd = dd; best = i; } }); return bd < this.cs * .62 ? best : -1; },
+  local(e) { const r = this.cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; },
+  down(e) {
+    if (!UI.isScreen('nibble') || UI.overlayOpen) return; e.preventDefault(); Audio.init(); Audio.resume();
+    const [x, y] = this.local(e); const i = this.hit(x, y); if (i < 0) return; this.press = { i, t0: this.t, id: e.pointerId }; try { this.cv.setPointerCapture(e.pointerId); } catch (err) {}
+  },
+  move(e) { const [x, y] = this.local(e); if (e.pointerType === 'mouse' && !this.press) this.hover = this.hit(x, y); },
+  up(e) { const p = this.press; this.press = null; const peeked = this.peek >= 0; this.peek = -1; if (!p) return; if (peeked) return; this.tap(p.i); },
+  // ---- actions
+  tap(i) {
+    if (this.anim || this.complete) return; const an = this.L.animals[i]; const act = this.actors[i];
+    if (this.used[i]) { act.sy = .9; act.sx = 1.1; Audio.tap(); this.bubble(`${ANIMALS[an.type].name} is full!`, 1400); return; }
+    const r = tryBite(an, this.cake, this.keep, this.L.w, this.L.h);
+    if (!r.ok) {
+      this.shake[i] = .4; Audio.bump(); act.expr = 'confused'; act.exprUntil = this.t + 1.2;
+      if (r.why === 'icing') { this.wasted++; this.flash = { cells: r.spoil, t: this.t }; this.bubble(`That would spoil the icing!`, 1800); }
+      else this.bubble(`Nothing left for ${ANIMALS[an.type].name} to nibble here.`, 1800);
+      return;
+    }
+    this.tutorial = false; this.hintPick = null; $('#nb-hint').classList.remove('show'); $('#nb-intro').classList.remove('show');
+    this.history.push({ cake: this.cake.slice(), used: this.used.slice() }); this.used[i] = 1;
+    const [sx, sy] = this.slot(an); const f = SIDES[an.side]; const pathCells = []; for (let k = 0; k <= r.steps; k++) pathCells.push([sx + f[0] * k, sy + f[1] * k]);
+    this.anim = { i, r, phase: 'in', t: 0, path: pathCells, eaten: 0 }; act.expr = 'excited'; Audio.pop();
+    this.updateHud();
+  },
+  undo() { if (this.anim || this.complete) return; const h = this.history.pop(); if (!h) { Audio.bump(); return; } this.cake = h.cake; this.used = h.used; this.wasted++; this.stuckShown = false; this.hintPick = null; Audio.undo(); this.updateHud(); $('#nb-undo').classList.remove('nudge'); },
+  reset() { if (this.anim || this.complete) return; const had = this.history.length > 0; this.resetState(); if (had) { this.wasted = 0; Audio.undo(); } this.updateHud(); $('#nb-undo').classList.remove('nudge'); },
+  hint() {
+    if (this.anim || this.complete) return; const d = this.L; const sol = solveNibble(d.animals, this.used, this.cake, this.keep, d.w, d.h);
+    if (!sol) { this.bubble('This cake is stuck. Undo a step and try another friend.', 3000); $('#nb-undo').classList.add('nudge'); return; }
+    this.hintsUsed++; this.hintPick = { i: sol[0], until: this.t + 4 }; Audio.pop(); this.bubble(`Try ${ANIMALS[d.animals[sol[0]].type].name} next.`, 2600);
+  },
+  finishBite() {
+    const d = this.L; this.anim = null; this.updateHud();
+    if (cakeDone(this.cake, this.keep)) { this.win(); return; }
+    const any = d.animals.some((an, i) => !this.used[i] && tryBite(an, this.cake, this.keep, d.w, d.h).ok);
+    if (!any && !this.stuckShown) { this.stuckShown = true; this.bubble('No one can nibble safely now. Undo a step!', 3200); $('#nb-undo').classList.add('nudge'); }
+  },
+  win() {
+    this.complete = true; let stars = this.wasted <= 1 ? 3 : this.wasted <= 4 ? 2 : 1; if (this.hintsUsed) stars = Math.min(stars, 2);
+    const prevUnlocked = Save.nUnlocked(); const before = Save.data.treats || 0; Save.setNStars(this.idx, stars);
+    const newArea = Save.nUnlocked() > prevUnlocked ? N_AREAS.find(a => a.levels[0] === prevUnlocked) : null;
+    this.actors.forEach((a, k) => { a.cheerT = .01 + k * .06; a.expr = 'celebrating'; });
+    this.shimmer = this.t; Audio.complete(); this.updateHud();
+    this.pending = { at: this.t + 1.3, data: { stars, earned: (Save.data.treats || 0) - before, newArea } };
+  },
+  updateHud() {
+    const d = this.L; if (!d) return; const ar = this.area(this.idx);
+    $('#nb-level').textContent = `Nibbles ${this.idx + 1} · ${ar.name}`; $('#nb-name').textContent = d.name;
+    let left = 0; for (let k = 0; k < this.cake.length; k++) if (this.cake[k] && !this.keep[k]) left++;
+    $('#nb-left').textContent = left ? `${left} bite${left === 1 ? '' : 's'} left` : 'All done!';
+    $('#nb-undo').disabled = !this.history.length || this.complete; $('#nb-reset').disabled = this.complete; $('#nb-hintbtn').disabled = this.complete;
+  },
+  // ---- per frame
+  update(dt) {
+    this.t += dt; if (!this.L) return; const motion = UI.motion; const cs = this.cs;
+    if (this.press && this.peek < 0 && this.t - this.press.t0 > .28) { this.peek = this.press.i; Audio.tap(); }
+    for (const k in this.shake) { this.shake[k] -= dt; if (this.shake[k] <= 0) delete this.shake[k]; }
+    this.actors.forEach((a, i) => {
+      a.blinkAt -= dt; if (a.blinkAt < 0) { a.blink = .14; a.blinkAt = 2 + Math.random() * 3; } if (a.blink > 0) a.blink -= dt;
+      a.sx += (1 - a.sx) * Math.min(1, dt * 10); a.sy += (1 - a.sy) * Math.min(1, dt * 10); if (a.exprUntil && this.t > a.exprUntil) { a.expr = null; a.exprUntil = 0; }
+      const an = this.L.animals[i]; const [sx, sy] = this.slot(an); const home = this.cell(sx, sy); a.hopY = 0;
+      if (!this.anim || this.anim.i !== i) { a.px = home[0]; a.py = home[1]; }
+      if (a.cheerT > 0) { a.cheerT += dt; const k = a.cheerT; if (motion) a.hopY = -Math.abs(Math.sin(k * 6)) * cs * .25 * Math.max(0, 1 - k / 1.6); }
+    });
+    const A = this.anim;
+    if (A) {
+      const act = this.actors[A.i]; const step = motion ? .075 : .02; A.t += dt;
+      if (A.phase === 'in' || A.phase === 'out') {
+        const n = A.path.length - 1; const total = Math.max(step, n * step); const k = clamp(A.t / total, 0, 1); const pos = (A.phase === 'in' ? k : 1 - k) * n; const ix = Math.min(n - 1, Math.floor(pos)); const f = n ? pos - ix : 0;
+        const a = this.cell(...A.path[Math.max(0, ix)]), b = this.cell(...A.path[Math.min(n, ix + 1)]); act.px = lerp(a[0], b[0], f); act.py = lerp(a[1], b[1], f); if (motion) act.hopY = -Math.abs(Math.sin(pos * Math.PI)) * cs * .18;
+        if (k >= 1) { A.t = 0; if (A.phase === 'in') { A.phase = 'munch'; Audio.munch(); } else { act.expr = 'happy'; act.exprUntil = this.t + 1.5; act.sx = 1.12; act.sy = .88; this.finishBite(); } }
+      } else if (A.phase === 'munch') {
+        const dur = motion ? .45 : .1; const last = this.cell(...A.path[A.path.length - 1]); act.px = last[0]; act.py = last[1]; if (motion) { act.sy = 1 + Math.sin(A.t * 30) * .06; }
+        const shouldEat = Math.ceil(clamp(A.t / dur, 0, 1) * A.r.cells.length);
+        while (A.eaten < shouldEat) { const [x, y] = A.r.cells[A.eaten++]; this.cake[y * this.L.w + x] = 0; const c = this.cell(x, y); for (let q = 0; q < 5; q++) this.particles.push({ k: 'crumb', x: c[0], y: c[1], vx: (Math.random() - .5) * 90, vy: -30 - Math.random() * 60, life: 0, max: .6, s: cs * (.04 + Math.random() * .04), c: Math.random() < .5 ? '#e9c58f' : '#d9a86a' }); this.updateHud(); }
+        if (A.t >= dur) { A.t = 0; A.phase = 'out'; for (let q = 0; q < 2; q++) this.particles.push({ k: 'heart', x: act.px, y: act.py - cs * .4, vx: (Math.random() - .5) * 30, vy: -40, life: 0, max: .9, s: cs * .08 }); }
+      }
+    }
+    for (let i = this.particles.length - 1; i >= 0; i--) { const p = this.particles[i]; p.life += dt; if (p.life > p.max) { this.particles.splice(i, 1); continue; } p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (p.k === 'heart' ? -10 : 260) * dt; }
+    if (this.pending && this.t > this.pending.at) { const d = this.pending.data; this.pending = null; UI.showNibbleComplete(d); }
+  },
+  render() {
+    const ctx = this.ctx, d = this.L; if (!ctx || !d) return; const cs = this.cs, t = this.t, W = d.w, H = d.h; const icing = this.area(this.idx).icing;
+    ctx.clearRect(0, 0, this.w, this.h); ctx.drawImage(this.plate, 0, 0, this.w, this.h);
+    const focus = this.peek >= 0 ? this.peek : this.hover >= 0 && !this.anim ? this.hover : -1;
+    // cake cells
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const [cx, cy] = this.cell(x, y); const s = cs * .92; const x0 = cx - s / 2, y0 = cy - s / 2; const k = y * W + x;
+      if (!this.cake[k]) { ctx.fillStyle = 'rgba(217,168,106,.25)'; const r = rng(k + 7); for (let q = 0; q < 3; q++) { circle(ctx, x0 + r() * s, y0 + r() * s, cs * .025); ctx.fill(); } continue; }
+      ctx.fillStyle = '#e8c38c'; roundRectPath(ctx, x0, y0 + s * .08, s, s * .92, s * .16); ctx.fill();
+      ctx.fillStyle = '#f6dfb2'; roundRectPath(ctx, x0, y0, s, s * .86, s * .16); ctx.fill();
+      ctx.fillStyle = 'rgba(201,150,90,.35)'; const r = rng(k * 13 + 1); for (let q = 0; q < 4; q++) { circle(ctx, x0 + s * (.18 + r() * .64), y0 + s * (.2 + r() * .55), s * .03); ctx.fill(); }
+      if (this.keep[k]) {
+        ctx.fillStyle = icing; ctx.beginPath(); ctx.moveTo(x0 + s * .06, y0 + s * .1); ctx.lineTo(x0 + s * .94, y0 + s * .1); ctx.lineTo(x0 + s * .94, y0 + s * .55);
+        for (let q = 0; q <= 4; q++) { const px = x0 + s * (.94 - q * .22); ctx.quadraticCurveTo(px - s * .05, y0 + s * (q % 2 ? .82 : .62), px - s * .11, y0 + s * .55); }
+        ctx.lineTo(x0 + s * .06, y0 + s * .1); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,.45)'; roundRectPath(ctx, x0 + s * .14, y0 + s * .14, s * .36, s * .1, s * .05); ctx.fill();
+        const sr = rng(k * 7 + 3); const cols = ['#ffffff', '#f7e3a1', '#a9c99a', '#c5dcec']; for (let q = 0; q < 3; q++) { ctx.save(); ctx.translate(x0 + s * (.2 + sr() * .6), y0 + s * (.22 + sr() * .3)); ctx.rotate(sr() * 3); ctx.fillStyle = cols[q % 4]; roundRectPath(ctx, -s * .05, -s * .015, s * .1, s * .03, s * .015); ctx.fill(); ctx.restore(); }
+      }
+      ctx.strokeStyle = 'rgba(150,105,60,.35)'; ctx.lineWidth = 1; roundRectPath(ctx, x0, y0, s, s, s * .16); ctx.stroke();
+    }
+    // completion shimmer over the icing
+    if (this.shimmer != null) { const k = (t - this.shimmer) / 1.1; if (k < 1) { ctx.save(); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { if (!this.keep[y * W + x]) continue; const dd = (x + y) / (W + H); const a = Math.max(0, 1 - Math.abs(k * 1.4 - dd) * 5); if (a <= 0) continue; const [cx, cy] = this.cell(x, y); ctx.globalAlpha = a * .7; ctx.fillStyle = '#ffffff'; roundRectPath(ctx, cx - cs * .46, cy - cs * .46, cs * .92, cs * .92, cs * .15); ctx.fill(); } ctx.restore(); } }
+    // spoil flash
+    if (this.flash) { const k = (t - this.flash.t) / .9; if (k > 1) this.flash = null; else { ctx.save(); ctx.globalAlpha = (1 - k) * .75; ctx.strokeStyle = '#d0574f'; ctx.lineWidth = 3; for (const [x, y] of this.flash.cells) { const [cx, cy] = this.cell(x, y); roundRectPath(ctx, cx - cs * .45, cy - cs * .45, cs * .9, cs * .9, cs * .15); ctx.stroke(); } ctx.restore(); } }
+    // peek / hover preview: the lane and the bite
+    if (focus >= 0 && !this.used[focus]) {
+      const an = d.animals[focus]; const r = tryBite(an, this.cake, this.keep, W, H); const [sx, sy] = this.slot(an); const f = SIDES[an.side]; const col = r.ok ? '#6f9a62' : '#d0574f';
+      ctx.save(); ctx.setLineDash([cs * .1, cs * .12]); ctx.strokeStyle = rgba(col, .75); ctx.lineWidth = Math.max(2, cs * .05); const a0 = this.cell(sx, sy); const end = r.anchor ? this.cell(...r.anchor) : this.cell(sx + f[0] * (an.side === 'top' || an.side === 'bottom' ? H + 1 : W + 1), sy + f[1] * (an.side === 'top' || an.side === 'bottom' ? H + 1 : W + 1)); ctx.beginPath(); ctx.moveTo(a0[0], a0[1]); ctx.lineTo(end[0], end[1]); ctx.stroke(); ctx.setLineDash([]);
+      const all = biteCells(an, this.cake, W, H); for (const [x, y] of all.cells) { const [cx, cy] = this.cell(x, y); const bad = this.keep[y * W + x]; ctx.fillStyle = bad ? 'rgba(208,87,79,.35)' : 'rgba(111,154,98,.35)'; ctx.strokeStyle = bad ? '#d0574f' : '#6f9a62'; ctx.lineWidth = 2.5; roundRectPath(ctx, cx - cs * .44, cy - cs * .44, cs * .88, cs * .88, cs * .15); ctx.fill(); ctx.stroke(); }
+      ctx.restore();
+    }
+    // hint ring
+    if (this.hintPick && t < this.hintPick.until) { const an = d.animals[this.hintPick.i]; const c = this.cell(...this.slot(an)); const pulse = .5 + .5 * Math.sin(t * 6); ctx.save(); ctx.strokeStyle = ANIMALS[an.type].path; ctx.lineWidth = 3; ctx.globalAlpha = .8; circle(ctx, c[0], c[1], cs * (.5 + pulse * .06)); ctx.stroke(); ctx.restore(); }
+    // animals and their bite signs
+    const order = d.animals.map((an, i) => i).sort((a, b) => this.actors[a].py - this.actors[b].py);
+    for (const i of order) {
+      const an = d.animals[i], act = this.actors[i]; const used = this.used[i] && (!this.anim || this.anim.i !== i); const C = ANIMALS[an.type];
+      const b = this.badgePos(an); drawBiteIcon(ctx, an.type, an.side, b[0], b[1], cs * .5, C.path, used);
+      const sh = this.shake[i] ? Math.sin(this.shake[i] * 50) * cs * .05 : 0; const u = cs * .86;
+      ctx.save(); if (used && !this.complete) ctx.globalAlpha = .55;
+      ctx.fillStyle = 'rgba(94,67,52,.16)'; ellipse(ctx, act.px + sh, act.py + cs * .34, u * .3, u * .08); ctx.fill();
+      drawAnimal(ctx, an.type, act.px + sh, act.py - cs * .02, u, { t, phase: act.phase, blink: act.blink > 0 ? 1 : 0, sx: act.sx, sy: act.sy, hopY: act.hopY, expr: act.expr || (used ? 'sleepy' : undefined), still: !UI.motion });
+      ctx.restore();
+    }
+    // tutorial finger on the first level
+    if (this.tutorial && !this.anim && d.animals.length) { const c = this.cell(...this.slot(d.animals[0])); const k = (t % 1.4) / 1.4; const press = k > .45 && k < .7; ctx.save(); ctx.globalAlpha = .9; ctx.fillStyle = 'rgba(255,250,240,.92)'; ctx.strokeStyle = 'rgba(94,67,52,.6)'; ctx.lineWidth = 2; const fx = c[0] + cs * .25, fy = c[1] + cs * (press ? .22 : .32); circle(ctx, fx, fy, cs * (press ? .17 : .2)); ctx.fill(); ctx.stroke(); if (press) { ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 2; circle(ctx, c[0], c[1], cs * (.3 + (k - .45) * 1.2)); ctx.stroke(); } ctx.restore(); }
+    for (const p of this.particles) { const k = p.life / p.max; ctx.save(); ctx.globalAlpha = 1 - easeIn(k); if (p.k === 'heart') drawHeart(ctx, p.x, p.y, p.s * (1 + k * .4), '#f08a9a'); else { ctx.fillStyle = p.c; circle(ctx, p.x, p.y, p.s); ctx.fill(); } ctx.restore(); }
+  }
+};
 // ------------------------------------------------------------------ main
 let lastTs = 0, hidden = false;
 function frame(ts) {
@@ -1714,13 +2135,14 @@ function frame(ts) {
   const dt = Math.min(.05, (ts - lastTs) / 1000 || 0); lastTs = ts;
   Ambient.draw(dt, UI.motion);
   if (UI.isScreen('game') && Game.level) { Game.update(dt); Board.render(dt); }
+  if (UI.isScreen('nibble') && Nibble.L) { Nibble.update(dt); Nibble.render(); }
   if (UI.isScreen('title')) { Garden.update(dt); Garden.draw(); }
   if (UI.overlayOpen) Celebrate.draw(dt);
 }
-function resizeAll() { Scenery.resize(); Ambient.resize(); Celebrate.resize(); Garden.resize(); if (Game.level) Board.resize(); }
+function resizeAll() { Scenery.resize(); Ambient.resize(); Celebrate.resize(); Garden.resize(); if (Game.level) Board.resize(); if (Nibble.L) Nibble.resize(); }
 function boot() {
   try { if (location.search.includes('_v=')) history.replaceState(null, '', location.pathname + location.hash); } catch (e) {}
-  Save.load(); Paper.init(); Scenery.init(); Ambient.init(); Board.init(); Celebrate.init(); Garden.init(); UI.init(); Input.init();
+  Save.load(); Paper.init(); Scenery.init(); Ambient.init(); Board.init(); Celebrate.init(); Garden.init(); Nibble.init(); UI.init(); Input.init();
   if (typeof Save.data.treats !== 'number') { Save.data.treats = Save.totalStars() + 3; Save.save(); }
   resizeAll();
   let rt = null; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(resizeAll, 120); });
@@ -1733,7 +2155,7 @@ function boot() {
   Updater.init();
 }
 document.addEventListener('DOMContentLoaded', boot);
-window.MochiColony = { Garden, Game, Board, UI, Save, LEVELS, AREAS, DAILY, dailyIndex, parseLevel, CHARS, Audio, Updater, drawCreature, drawHome, Scenery, CHAR_ORDER };
+window.MochiColony = { Nibble, NLEVELS, ANIMALS, ANIMAL_ORDER, tryBite, solveNibble, Garden, Game, Board, UI, Save, LEVELS, AREAS, DAILY, dailyIndex, parseLevel, CHARS, Audio, Updater, drawCreature, drawHome, Scenery, CHAR_ORDER };
 </script>
 </body>
 </html>
